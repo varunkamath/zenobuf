@@ -164,10 +164,11 @@ jobs:
         run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
 
       - name: Install protobuf compiler (Ubuntu)
-        if: runner.os == 'Linux' && !matrix.platform.cross
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
+          echo "PROTOC=/usr/bin/protoc" >> $GITHUB_ENV
 
       - name: Install protobuf compiler (macOS)
         if: runner.os == 'macOS'
@@ -190,6 +191,8 @@ jobs:
           command: build
           target: ${{ matrix.platform.target }}
           args: "--release"
+        env:
+          PROTOC: ${{ env.PROTOC }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
