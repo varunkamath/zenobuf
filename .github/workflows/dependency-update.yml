@@ -1,0 +1,38 @@
+name: Update Dependencies
+
+on:
+  schedule:
+    # Run weekly on Monday at 3:00 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-edit
+        run: cargo install cargo-edit
+      
+      - name: Update dependencies
+        run: |
+          cargo update
+          cargo upgrade --workspace
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update dependencies"
+          title: "chore: update dependencies"
+          body: |
+            This PR updates Rust dependencies to their latest compatible versions.
+            
+            This is an automated PR created by the weekly dependency update workflow.
+          branch: dependency-updates
+          base: main

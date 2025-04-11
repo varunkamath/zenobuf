@@ -1,0 +1,41 @@
+name: Generate Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to generate (leave empty for unreleased changes)'
+        required: false
+        default: ''
+
+jobs:
+  changelog:
+    name: Generate Changelog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Install git-cliff
+        uses: orhun/git-cliff-action@v2
+        with:
+          config: cliff.toml
+          args: ${{ github.event.inputs.version != '' && format('--tag {0}', github.event.inputs.version) || '--unreleased' }}
+      
+      - name: Generate Changelog
+        run: git-cliff ${{ github.event.inputs.version != '' && format('--tag {0}', github.event.inputs.version) || '--unreleased' }} > CHANGELOG.md
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: update changelog for ${{ github.event.inputs.version != '' && github.event.inputs.version || 'unreleased changes' }}"
+          title: "docs: update changelog for ${{ github.event.inputs.version != '' && github.event.inputs.version || 'unreleased changes' }}"
+          body: |
+            This PR updates the CHANGELOG.md with ${{ github.event.inputs.version != '' && format('changes for version {0}', github.event.inputs.version) || 'unreleased changes' }}.
+            
+            Generated using [git-cliff](https://github.com/orhun/git-cliff).
+          branch: update-changelog
+          base: main
