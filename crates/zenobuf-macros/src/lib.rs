@@ -16,8 +16,11 @@ use syn::{parse_macro_input, DeriveInput};
 ///
 /// # Example
 ///
-/// ```
-/// #[derive(Clone, PartialEq, ::prost::Message, ZenobufMessage)]
+/// ```ignore
+/// // Import the necessary crates
+/// use zenobuf_macros::ZenobufMessage;
+///
+/// #[derive(Clone, PartialEq, prost::Message, ZenobufMessage)]
 /// pub struct Point {
 ///     #[prost(float, tag = "1")]
 ///     pub x: f32,
@@ -27,6 +30,8 @@ use syn::{parse_macro_input, DeriveInput};
 ///     pub z: f32,
 /// }
 /// ```
+///
+/// In your actual code, you would typically use it with a protobuf-generated struct:
 #[proc_macro_derive(ZenobufMessage)]
 pub fn derive_zenobuf_message(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
