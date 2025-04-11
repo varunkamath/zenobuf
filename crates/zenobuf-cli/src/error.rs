@@ -9,8 +9,6 @@ pub enum Error {
     Zenoh(zenoh::Error),
     /// JSON error
     Json(serde_json::Error),
-    /// Key expression error
-    KeyExpr(String),
     /// Other error
     Other(String),
 }
@@ -20,7 +18,6 @@ impl fmt::Display for Error {
         match self {
             Error::Zenoh(e) => write!(f, "Zenoh error: {}", e),
             Error::Json(e) => write!(f, "JSON error: {}", e),
-            Error::KeyExpr(e) => write!(f, "Key expression error: {}", e),
             Error::Other(e) => write!(f, "{}", e),
         }
     }
@@ -48,6 +45,16 @@ impl From<String> for Error {
 
 impl From<&str> for Error {
     fn from(e: &str) -> Self {
+        Error::Other(e.to_string())
+    }
+}
+
+// Add a specific implementation for Box<dyn Error>
+impl<E> From<Box<E>> for Error
+where
+    E: std::error::Error + 'static,
+{
+    fn from(e: Box<E>) -> Self {
         Error::Other(e.to_string())
     }
 }
