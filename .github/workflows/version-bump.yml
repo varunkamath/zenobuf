@@ -74,7 +74,7 @@ jobs:
         run: git-cliff --unreleased --tag v${{ env.NEW_VERSION }} > CHANGELOG.md
       
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore(release): prepare for v${{ env.NEW_VERSION }}"
