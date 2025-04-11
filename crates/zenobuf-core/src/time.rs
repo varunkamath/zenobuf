@@ -31,10 +31,7 @@ impl Time {
 
     /// Creates a Time from a Duration since the Unix epoch
     pub fn from_duration(duration: Duration) -> Self {
-        Self::new(
-            duration.as_secs(),
-            duration.subsec_nanos(),
-        )
+        Self::new(duration.as_secs(), duration.subsec_nanos())
     }
 
     /// Converts the Time to a Duration since the Unix epoch
@@ -60,7 +57,8 @@ impl Time {
     /// Subtracts a Duration from the Time
     pub fn sub(&self, duration: Duration) -> Self {
         let duration_since_epoch = self.to_duration();
-        let new_duration = duration_since_epoch.checked_sub(duration)
+        let new_duration = duration_since_epoch
+            .checked_sub(duration)
             .unwrap_or_else(|| Duration::new(0, 0));
         Self::from_duration(new_duration)
     }
@@ -102,10 +100,7 @@ impl ZenobufDuration {
 
     /// Creates a Duration from a std::time::Duration
     pub fn from_std(duration: Duration) -> Self {
-        Self::new(
-            duration.as_secs() as i32,
-            duration.subsec_nanos() as i32,
-        )
+        Self::new(duration.as_secs() as i32, duration.subsec_nanos() as i32)
     }
 
     /// Converts the Duration to a std::time::Duration

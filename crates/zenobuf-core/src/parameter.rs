@@ -44,12 +44,12 @@ impl Parameter {
     /// Returns the value of the parameter
     pub fn get_value<T: DeserializeOwned + Clone + Send + Sync + 'static>(&self) -> Result<T> {
         let value = self.value.lock().unwrap();
-        
+
         // Try to downcast the value
         if let Some(typed_value) = value.downcast_ref::<T>() {
             return Ok(typed_value.clone());
         }
-        
+
         // If downcasting fails, try to deserialize from the serialized value
         let serialized = self.serialized.lock().unwrap();
         let deserialized = serde_json::from_str::<T>(&serialized).map_err(|e| {
@@ -58,7 +58,7 @@ impl Parameter {
                 self.name, e
             ))
         })?;
-        
+
         Ok(deserialized)
     }
 
@@ -68,12 +68,15 @@ impl Parameter {
         value: T,
     ) -> Result<()> {
         let serialized = serde_json::to_string(&value).map_err(|e| {
-            Error::Parameter(format!("Failed to serialize parameter {}: {}", self.name, e))
+            Error::Parameter(format!(
+                "Failed to serialize parameter {}: {}",
+                self.name, e
+            ))
         })?;
-        
+
         *self.value.lock().unwrap() = Box::new(value);
         *self.serialized.lock().unwrap() = serialized;
-        
+
         Ok(())
     }
 }
