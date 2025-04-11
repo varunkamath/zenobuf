@@ -12,18 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Install cargo-edit
         run: cargo install cargo-edit
-      
+
       - name: Update dependencies
         run: |
           cargo update
           cargo upgrade --workspace
-      
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -32,7 +32,7 @@ jobs:
           title: "chore: update dependencies"
           body: |
             This PR updates Rust dependencies to their latest compatible versions.
-            
+
             This is an automated PR created by the weekly dependency update workflow.
           branch: dependency-updates
-          base: main
+          base: dev

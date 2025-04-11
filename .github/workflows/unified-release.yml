@@ -1,0 +1,390 @@
+name: Unified CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      custom_version:
+        description: 'Custom version (overrides version_type if provided)'
+        required: false
+      dry_run:
+        description: 'Dry run (no commits, tags, or releases)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  RUSTFLAGS: "-D warnings"
+  SCCACHE_CACHE_SIZE: 2G
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # Check code formatting
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  # Run clippy on all targets
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+      - name: Set RUSTC_WRAPPER
+        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Install protobuf compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # Audit dependencies for security vulnerabilities
+  audit:
+    name: Security audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clear RUSTC_WRAPPER
+        run: echo "RUSTC_WRAPPER=" >> $GITHUB_ENV
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check advisories
+          arguments: --all-features
+
+  # Check license compliance
+  license-check:
+    name: License check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clear RUSTC_WRAPPER
+        run: echo "RUSTC_WRAPPER=" >> $GITHUB_ENV
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check licenses
+          arguments: --all-features
+
+  # Run tests on all supported platforms
+  test:
+    name: Test ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install sccache (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: mozilla-actions/sccache-action@v0.0.9
+      - name: Set RUSTC_WRAPPER (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Set RUSTC_WRAPPER (Windows)
+        if: runner.os == 'Windows'
+        run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
+      - name: Install protobuf compiler (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+      - name: Install protobuf compiler (macOS)
+        if: runner.os == 'macOS'
+        run: brew install protobuf
+      - name: Install protobuf compiler (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install protoc
+          echo "$env:ChocolateyInstall\lib\protoc\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Run tests
+        run: cargo test --all-features --workspace
+
+  # Release process - only runs on main branch or manual trigger
+  release:
+    name: Release
+    needs: [fmt, clippy, audit, license-check, test]
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push' && contains(github.event.head_commit.message, 'Merge pull request')) || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ env.NEW_VERSION }}
+      is_dry_run: ${{ github.event.inputs.dry_run || 'false' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install tools
+        run: |
+          cargo install cargo-edit
+          cargo install git-cliff
+      
+      - name: Determine new version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ -n "${{ github.event.inputs.custom_version }}" ]; then
+              echo "NEW_VERSION=${{ github.event.inputs.custom_version }}" >> $GITHUB_ENV
+            else
+              # Get current version from Cargo.toml
+              CURRENT_VERSION=$(grep -m 1 "version = " crates/zenobuf-core/Cargo.toml | sed 's/version = //g' | sed 's/"//g' | tr -d '[:space:]')
+              
+              # Split version into components
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+              
+              # Bump version based on type
+              if [ "${{ github.event.inputs.version_type }}" = "major" ]; then
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+              elif [ "${{ github.event.inputs.version_type }}" = "minor" ]; then
+                MINOR=$((MINOR + 1))
+                PATCH=0
+              else
+                PATCH=$((PATCH + 1))
+              fi
+              
+              NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+              echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+            fi
+          else
+            # For automatic releases from main branch, use patch version bump
+            CURRENT_VERSION=$(grep -m 1 "version = " crates/zenobuf-core/Cargo.toml | sed 's/version = //g' | sed 's/"//g' | tr -d '[:space:]')
+            
+            # Split version into components
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+            
+            # Bump patch version
+            PATCH=$((PATCH + 1))
+            
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+          fi
+          echo "Version will be bumped to ${{ env.NEW_VERSION }}"
+      
+      - name: Update version in Cargo.toml files
+        run: |
+          # Update version in all Cargo.toml files
+          find crates -name "Cargo.toml" -exec cargo set-version ${{ env.NEW_VERSION }} --manifest-path {} \;
+      
+      - name: Generate Changelog
+        run: git-cliff --unreleased --tag v${{ env.NEW_VERSION }} > CHANGELOG.md
+      
+      - name: Commit changes and create tag
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add CHANGELOG.md
+          find crates -name "Cargo.toml" -exec git add {} \;
+          git commit -m "chore(release): prepare for v${{ env.NEW_VERSION }}"
+          git tag -a "v${{ env.NEW_VERSION }}" -m "Release v${{ env.NEW_VERSION }}"
+          git push
+          git push --tags
+
+  # Build for all platforms
+  build:
+    name: Build ${{ matrix.platform.name }}
+    needs: release
+    if: ${{ needs.release.outputs.is_dry_run != 'true' }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: Linux x86_64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            cross: false
+
+          - name: Linux ARM64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            cross: true
+
+          - name: macOS x86_64
+            os: macos-latest
+            target: x86_64-apple-darwin
+            cross: false
+
+          - name: macOS ARM64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            cross: false
+
+          - name: Windows x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            cross: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.new_version }}
+      
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+      
+      - name: Install sccache (Linux/macOS)
+        if: runner.os != 'Windows'
+        uses: mozilla-actions/sccache-action@v0.0.9
+      
+      - name: Set RUSTC_WRAPPER (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      
+      - name: Set RUSTC_WRAPPER (Windows)
+        if: runner.os == 'Windows'
+        run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
+      
+      - name: Install protobuf compiler (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          echo "PROTOC=/usr/bin/protoc" >> $GITHUB_ENV
+      
+      - name: Install protobuf compiler (macOS)
+        if: runner.os == 'macOS'
+        run: brew install protobuf
+      
+      - name: Install protobuf compiler (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install protoc
+          echo "$env:ChocolateyInstall\lib\protoc\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      
+      - name: Build with cargo
+        if: ${{ !matrix.platform.cross }}
+        run: cargo build --release --target ${{ matrix.platform.target }}
+      
+      - name: Build with cross
+        if: ${{ matrix.platform.cross }}
+        uses: houseabsolute/actions-rust-cross@v1
+        with:
+          command: build
+          target: ${{ matrix.platform.target }}
+          args: "--release"
+        env:
+          PROTOC: ${{ env.PROTOC }}
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zenobuf-${{ matrix.platform.name }}
+          path: |
+            target/${{ matrix.platform.target }}/release/zenobuf-cli*
+            !target/${{ matrix.platform.target }}/release/zenobuf-cli.d
+            !target/${{ matrix.platform.target }}/release/zenobuf-cli.pdb
+          if-no-files-found: error
+
+  # Create GitHub release
+  create-release:
+    name: Create GitHub Release
+    needs: [release, build]
+    if: ${{ needs.release.outputs.is_dry_run != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.new_version }}
+          fetch-depth: 0
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      - name: Display structure of downloaded files
+        run: find artifacts -type f | sort
+      
+      - name: Install git-cliff
+        run: cargo install git-cliff
+      
+      - name: Generate Release Notes
+        run: git-cliff --latest --strip header > release-notes.md
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.release.outputs.new_version }}
+          name: Release v${{ needs.release.outputs.new_version }}
+          body_path: release-notes.md
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Publish to crates.io
+  publish:
+    name: Publish to crates.io
+    needs: [release, create-release]
+    if: ${{ needs.release.outputs.is_dry_run != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.new_version }}
+      
+      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Publish zenobuf-core
+        run: |
+          cd crates/zenobuf-core
+          cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+      
+      - name: Wait for crates.io to index
+        run: sleep 30
+      
+      - name: Publish zenobuf-macros
+        run: |
+          cd crates/zenobuf-macros
+          cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+      
+      - name: Wait for crates.io to index
+        run: sleep 30
+      
+      - name: Publish zenobuf-cli
+        run: |
+          cd crates/zenobuf-cli
+          cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}

@@ -107,13 +107,15 @@ docs(examples): add more comprehensive examples
 Adds more examples to demonstrate how to use the framework in different scenarios.
 ```
 
-## Release Process
+## Development and Release Process
 
-Releases are managed through GitHub Actions workflows:
+We follow a main-dev branch structure:
 
-1. **Version Bump**: To create a new release, use the "Version Bump" workflow from the Actions tab. This will create a PR that updates the version numbers and changelog.
+1. **Development**: All development work happens on the `dev` branch or feature branches that are merged into `dev`.
 
-2. **Release**: After merging the version bump PR, tag the release with `git tag -a vX.Y.Z -m "Release vX.Y.Z"` and push the tag. This will trigger the release workflow to create a GitHub release.
+2. **Releases**: When ready for a release, create a pull request from `dev` to `main`. Merging this PR will automatically trigger the release process.
+
+3. **Manual Release**: You can also manually trigger a release using the "Unified CI/CD" workflow from the Actions tab. This allows you to specify the version bump type (patch, minor, major) or a custom version.
 
 ## Changelog
 

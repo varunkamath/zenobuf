@@ -2,17 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
-    tags: ["v*"]
+    branches-ignore: [main, dev]
   pull_request:
-    branches: [main]
+    branches-ignore: [main, dev]
   workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
   RUSTFLAGS: "-D warnings"
-  SCCACHE_CACHE_SIZE: 2G
 
 jobs:
   # Check code formatting
@@ -37,10 +35,6 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
-      - name: Set RUSTC_WRAPPER
-        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Install protobuf compiler
         run: |
           sudo apt-get update
@@ -48,197 +42,18 @@ jobs:
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-  # Audit dependencies for security vulnerabilities
-  audit:
-    name: Security audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Clear RUSTC_WRAPPER
-        run: echo "RUSTC_WRAPPER=" >> $GITHUB_ENV
-      - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          command: check advisories
-          arguments: --all-features
-
-  # Check license compliance
-  license-check:
-    name: License check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Clear RUSTC_WRAPPER
-        run: echo "RUSTC_WRAPPER=" >> $GITHUB_ENV
-      - uses: EmbarkStudios/cargo-deny-action@v2
-        with:
-          command: check licenses
-          arguments: --all-features
-
-  # Run tests on all supported platforms
+  # Run tests
   test:
-    name: Test ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    name: Test
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Install sccache (Linux/macOS)
-        if: runner.os != 'Windows'
-        uses: mozilla-actions/sccache-action@v0.0.9
-      - name: Set RUSTC_WRAPPER (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      - name: Set RUSTC_WRAPPER (Windows)
-        if: runner.os == 'Windows'
-        run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
-      - name: Install protobuf compiler (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: Install protobuf compiler
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
-      - name: Install protobuf compiler (macOS)
-        if: runner.os == 'macOS'
-        run: brew install protobuf
-      - name: Install protobuf compiler (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install protoc
-          echo "$env:ChocolateyInstall\lib\protoc\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Run tests
         run: cargo test --all-features --workspace
-
-  # Build for all supported platforms
-  build:
-    name: Build ${{ matrix.platform.name }}
-    runs-on: ${{ matrix.platform.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - name: Linux x86_64
-            os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            cross: false
-
-          - name: Linux ARM64
-            os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            cross: true
-
-          - name: macOS x86_64
-            os: macos-latest
-            target: x86_64-apple-darwin
-            cross: false
-
-          - name: macOS ARM64
-            os: macos-latest
-            target: aarch64-apple-darwin
-            cross: false
-
-          - name: Windows x86_64
-            os: windows-latest
-            target: x86_64-pc-windows-msvc
-            cross: false
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform.target }}
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.platform.target }}
-
-      - name: Install sccache (Linux/macOS)
-        if: runner.os != 'Windows'
-        uses: mozilla-actions/sccache-action@v0.0.9
-      - name: Set RUSTC_WRAPPER (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      - name: Set RUSTC_WRAPPER (Windows)
-        if: runner.os == 'Windows'
-        run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
-
-      - name: Install protobuf compiler (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler
-          echo "PROTOC=/usr/bin/protoc" >> $GITHUB_ENV
-
-      - name: Install protobuf compiler (macOS)
-        if: runner.os == 'macOS'
-        run: brew install protobuf
-
-      - name: Install protobuf compiler (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          choco install protoc
-          echo "$env:ChocolateyInstall\lib\protoc\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-      - name: Build with cargo
-        if: ${{ !matrix.platform.cross }}
-        run: cargo build --release --target ${{ matrix.platform.target }}
-
-      - name: Build with cross
-        if: ${{ matrix.platform.cross }}
-        uses: houseabsolute/actions-rust-cross@v1
-        with:
-          command: build
-          target: ${{ matrix.platform.target }}
-          args: "--release"
-        env:
-          PROTOC: ${{ env.PROTOC }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: zenobuf-${{ matrix.platform.name }}
-          path: |
-            target/${{ matrix.platform.target }}/release/zenobuf-cli*
-            !target/${{ matrix.platform.target }}/release/zenobuf-cli.d
-            !target/${{ matrix.platform.target }}/release/zenobuf-cli.pdb
-          if-no-files-found: error
-
-  # Create a release when a tag is pushed
-  release:
-    name: Create Release
-    needs: [build, test, clippy, fmt, audit, license-check]
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Display structure of downloaded files
-        run: find artifacts -type f | sort
-
-      - name: Install git-cliff
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-
-      - name: Generate Release Notes
-        run: git-cliff --latest --strip header > release-notes.md
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            artifacts/**/*
-          body_path: release-notes.md
-          draft: false
-          prerelease: false
-          generate_release_notes: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # Note: Build and release processes are now handled by the unified-release.yml workflow
