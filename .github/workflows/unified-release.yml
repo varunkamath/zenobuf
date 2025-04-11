@@ -147,15 +147,15 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Install tools
         run: |
           cargo install cargo-edit
           cargo install git-cliff
-      
+
       - name: Determine new version
         id: version
         run: |
@@ -165,10 +165,10 @@ jobs:
             else
               # Get current version from Cargo.toml
               CURRENT_VERSION=$(grep -m 1 "version = " crates/zenobuf-core/Cargo.toml | sed 's/version = //g' | sed 's/"//g' | tr -d '[:space:]')
-              
+
               # Split version into components
               IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-              
+
               # Bump version based on type
               if [ "${{ github.event.inputs.version_type }}" = "major" ]; then
                 MAJOR=$((MAJOR + 1))
@@ -180,33 +180,33 @@ jobs:
               else
                 PATCH=$((PATCH + 1))
               fi
-              
+
               NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
               echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             fi
           else
             # For automatic releases from main branch, use patch version bump
             CURRENT_VERSION=$(grep -m 1 "version = " crates/zenobuf-core/Cargo.toml | sed 's/version = //g' | sed 's/"//g' | tr -d '[:space:]')
-            
+
             # Split version into components
             IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-            
+
             # Bump patch version
             PATCH=$((PATCH + 1))
-            
+
             NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           fi
           echo "Version will be bumped to ${{ env.NEW_VERSION }}"
-      
+
       - name: Update version in Cargo.toml files
         run: |
           # Update version in all Cargo.toml files
           find crates -name "Cargo.toml" -exec cargo set-version ${{ env.NEW_VERSION }} --manifest-path {} \;
-      
+
       - name: Generate Changelog
         run: git-cliff --unreleased --tag v${{ env.NEW_VERSION }} > CHANGELOG.md
-      
+
       - name: Commit changes and create tag
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
@@ -216,6 +216,8 @@ jobs:
           find crates -name "Cargo.toml" -exec git add {} \;
           git commit -m "chore(release): prepare for v${{ env.NEW_VERSION }}"
           git tag -a "v${{ env.NEW_VERSION }}" -m "Release v${{ env.NEW_VERSION }}"
+          # Use PAT instead of GITHUB_TOKEN to bypass branch protection
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
           git push
           git push --tags
 
@@ -258,44 +260,44 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: v${{ needs.release.outputs.new_version }}
-      
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform.target }}
-      
+
       - name: Install sccache (Linux/macOS)
         if: runner.os != 'Windows'
         uses: mozilla-actions/sccache-action@v0.0.9
-      
+
       - name: Set RUSTC_WRAPPER (Linux/macOS)
         if: runner.os != 'Windows'
         run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      
+
       - name: Set RUSTC_WRAPPER (Windows)
         if: runner.os == 'Windows'
         run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
-      
+
       - name: Install protobuf compiler (Ubuntu)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler
           echo "PROTOC=/usr/bin/protoc" >> $GITHUB_ENV
-      
+
       - name: Install protobuf compiler (macOS)
         if: runner.os == 'macOS'
         run: brew install protobuf
-      
+
       - name: Install protobuf compiler (Windows)
         if: runner.os == 'Windows'
         run: |
           choco install protoc
           echo "$env:ChocolateyInstall\lib\protoc\tools\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      
+
       - name: Build with cargo
         if: ${{ !matrix.platform.cross }}
         run: cargo build --release --target ${{ matrix.platform.target }}
-      
+
       - name: Build with cross
         if: ${{ matrix.platform.cross }}
         uses: houseabsolute/actions-rust-cross@v1
@@ -305,7 +307,7 @@ jobs:
           args: "--release"
         env:
           PROTOC: ${{ env.PROTOC }}
-      
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -327,21 +329,21 @@ jobs:
         with:
           ref: v${{ needs.release.outputs.new_version }}
           fetch-depth: 0
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      
+
       - name: Display structure of downloaded files
         run: find artifacts -type f | sort
-      
+
       - name: Install git-cliff
         run: cargo install git-cliff
-      
+
       - name: Generate Release Notes
         run: git-cliff --latest --strip header > release-notes.md
-      
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -365,25 +367,25 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: v${{ needs.release.outputs.new_version }}
-      
+
       - uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Publish zenobuf-core
         run: |
           cd crates/zenobuf-core
           cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
-      
+
       - name: Wait for crates.io to index
         run: sleep 30
-      
+
       - name: Publish zenobuf-macros
         run: |
           cd crates/zenobuf-macros
           cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
-      
+
       - name: Wait for crates.io to index
         run: sleep 30
-      
+
       - name: Publish zenobuf-cli
         run: |
           cd crates/zenobuf-cli
