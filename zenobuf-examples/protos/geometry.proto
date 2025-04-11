@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package zenobuf.examples.geometry;
+
+// Point in 3D space
+message Point {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+// Quaternion representing orientation
+message Quaternion {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  float w = 4;
+}
+
+// Pose in 3D space
+message Pose {
+  Point position = 1;
+  Quaternion orientation = 2;
+}

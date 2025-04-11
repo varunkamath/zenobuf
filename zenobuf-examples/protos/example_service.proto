@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package zenobuf.examples.service;
+
+// Request for the AddTwoInts service
+message AddTwoIntsRequest {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+// Response from the AddTwoInts service
+message AddTwoIntsResponse {
+  int32 sum = 1;
+}
