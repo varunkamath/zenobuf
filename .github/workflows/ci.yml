@@ -38,7 +38,7 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.4
+        uses: mozilla-actions/sccache-action@v0.0.9
       - name: Set RUSTC_WRAPPER
         run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Install protobuf compiler
@@ -88,7 +88,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install sccache (Linux/macOS)
         if: runner.os != 'Windows'
-        uses: mozilla-actions/sccache-action@v0.0.4
+        uses: mozilla-actions/sccache-action@v0.0.9
       - name: Set RUSTC_WRAPPER (Linux/macOS)
         if: runner.os != 'Windows'
         run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
@@ -155,7 +155,7 @@ jobs:
 
       - name: Install sccache (Linux/macOS)
         if: runner.os != 'Windows'
-        uses: mozilla-actions/sccache-action@v0.0.4
+        uses: mozilla-actions/sccache-action@v0.0.9
       - name: Set RUSTC_WRAPPER (Linux/macOS)
         if: runner.os != 'Windows'
         run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
