@@ -221,7 +221,7 @@ jobs:
         run: find artifacts -type f | sort
 
       - name: Install git-cliff
-        uses: orhun/git-cliff-action@v2
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
 

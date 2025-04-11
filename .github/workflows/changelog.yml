@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
       
       - name: Install git-cliff
-        uses: orhun/git-cliff-action@v2
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: ${{ github.event.inputs.version != '' && format('--tag {0}', github.event.inputs.version) || '--unreleased' }}
