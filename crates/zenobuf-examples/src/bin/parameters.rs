@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
     // Set parameters
     node.set_parameter("string_param", "hello".to_string())?;
     node.set_parameter("int_param", 42)?;
-    node.set_parameter("float_param", 3.14)?;
+    node.set_parameter("float_param", std::f64::consts::PI)?;
     node.set_parameter("bool_param", true)?;
 
     // Get parameters

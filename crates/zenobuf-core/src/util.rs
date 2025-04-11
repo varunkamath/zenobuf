@@ -40,18 +40,16 @@ pub fn string_to_duration(s: &str) -> Option<Duration> {
     let mut unit = String::new();
 
     for c in s.chars() {
-        if c.is_digit(10) || c == '.' {
+        if c.is_ascii_digit() || c == '.' {
             current.push(c);
         } else if c.is_alphabetic() {
             unit.push(c);
-        } else if c.is_whitespace() {
-            if !current.is_empty() && !unit.is_empty() {
-                if let Some(duration) = parse_duration_component(&current, &unit) {
-                    result += duration;
-                }
-                current.clear();
-                unit.clear();
+        } else if c.is_whitespace() && !current.is_empty() && !unit.is_empty() {
+            if let Some(duration) = parse_duration_component(&current, &unit) {
+                result += duration;
             }
+            current.clear();
+            unit.clear();
         }
     }
 

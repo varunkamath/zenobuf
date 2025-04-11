@@ -69,10 +69,12 @@ impl Node {
         let topic_name = topic.to_string();
 
         // Check if the publisher already exists
-        let mut publishers = self.publishers.lock().unwrap();
-        if publishers.contains_key(&topic_name) {
-            return Err(Error::TopicAlreadyExists(topic_name));
-        }
+        {
+            let publishers = self.publishers.lock().unwrap();
+            if publishers.contains_key(&topic_name) {
+                return Err(Error::TopicAlreadyExists(topic_name));
+            }
+        } // MutexGuard is dropped here
 
         // Create the publisher
         let inner_publisher = self.transport.create_publisher::<M>(&topic_name).await?;
@@ -82,6 +84,7 @@ impl Node {
         ));
 
         // Store the publisher
+        let mut publishers = self.publishers.lock().unwrap();
         publishers.insert(topic_name, Box::new(publisher.clone()));
 
         Ok(publisher)
@@ -101,10 +104,12 @@ impl Node {
         let topic_name = topic.to_string();
 
         // Check if the subscriber already exists
-        let mut subscribers = self.subscribers.lock().unwrap();
-        if subscribers.contains_key(&topic_name) {
-            return Err(Error::TopicAlreadyExists(topic_name));
-        }
+        {
+            let subscribers = self.subscribers.lock().unwrap();
+            if subscribers.contains_key(&topic_name) {
+                return Err(Error::TopicAlreadyExists(topic_name));
+            }
+        } // MutexGuard is dropped here
 
         // Create the subscriber
         let inner_subscriber = self
@@ -117,6 +122,7 @@ impl Node {
         ));
 
         // Store the subscriber
+        let mut subscribers = self.subscribers.lock().unwrap();
         subscribers.insert(topic_name, Box::new(subscriber.clone()));
 
         Ok(subscriber)
@@ -135,10 +141,12 @@ impl Node {
         let full_service_name = service_name.to_string();
 
         // Check if the service already exists
-        let mut services = self.services.lock().unwrap();
-        if services.contains_key(&full_service_name) {
-            return Err(Error::ServiceAlreadyExists(full_service_name));
-        }
+        {
+            let services = self.services.lock().unwrap();
+            if services.contains_key(&full_service_name) {
+                return Err(Error::ServiceAlreadyExists(full_service_name));
+            }
+        } // MutexGuard is dropped here
 
         // Create the service
         let inner_service = self
@@ -151,6 +159,7 @@ impl Node {
         ));
 
         // Store the service
+        let mut services = self.services.lock().unwrap();
         services.insert(full_service_name, Box::new(service.clone()));
 
         Ok(service)
