@@ -1,6 +1,6 @@
 [package]
 name = "zenobuf-cli"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["Zenobuf Team"]
 description = "Command-line tools for the Zenobuf framework"
