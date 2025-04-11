@@ -25,13 +25,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
       - name: Install cargo-edit
         run: cargo install cargo-edit
-      
+
       - name: Determine new version
         id: version
         run: |
@@ -40,10 +40,10 @@ jobs:
           else
             # Get current version from Cargo.toml
             CURRENT_VERSION=$(grep -m 1 "version = " crates/zenobuf-core/Cargo.toml | sed 's/version = //g' | sed 's/"//g' | tr -d '[:space:]')
-            
+
             # Split version into components
             IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-            
+
             # Bump version based on type
             if [ "${{ github.event.inputs.version_type }}" = "major" ]; then
               MAJOR=$((MAJOR + 1))
@@ -55,24 +55,22 @@ jobs:
             else
               PATCH=$((PATCH + 1))
             fi
-            
+
             NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           fi
-      
+
       - name: Update version in Cargo.toml files
         run: |
           # Update version in all Cargo.toml files
           find crates -name "Cargo.toml" -exec cargo set-version ${{ env.NEW_VERSION }} --manifest-path {} \;
-      
+
       - name: Install git-cliff
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-      
+        run: cargo install git-cliff
+
       - name: Generate Changelog
         run: git-cliff --unreleased --tag v${{ env.NEW_VERSION }} > CHANGELOG.md
-      
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
@@ -81,21 +79,21 @@ jobs:
           title: "chore(release): prepare for v${{ env.NEW_VERSION }}"
           body: |
             # Release v${{ env.NEW_VERSION }}
-            
+
             This PR prepares for the v${{ env.NEW_VERSION }} release by:
-            
+
             - Bumping version in all Cargo.toml files
             - Updating CHANGELOG.md with all changes since the last release
-            
+
             ## After merging
-            
+
             After this PR is merged, please tag the release:
-            
+
             ```bash
             git tag -a v${{ env.NEW_VERSION }} -m "Release v${{ env.NEW_VERSION }}"
             git push origin v${{ env.NEW_VERSION }}
             ```
-            
+
             This will trigger the release workflow to create a GitHub release.
           branch: release-v${{ env.NEW_VERSION }}
           base: main
