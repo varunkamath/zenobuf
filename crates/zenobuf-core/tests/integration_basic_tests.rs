@@ -211,7 +211,8 @@ async fn test_parameter_basic() {
     node.set_parameter("string_param", "hello".to_string())
         .unwrap();
     node.set_parameter("int_param", 42).unwrap();
-    node.set_parameter("float_param", 3.14).unwrap();
+    node.set_parameter("float_param", std::f64::consts::PI)
+        .unwrap();
     node.set_parameter("bool_param", true).unwrap();
     node.set_parameter("array_param", vec![1, 2, 3]).unwrap();
 
@@ -225,8 +226,8 @@ async fn test_parameter_basic() {
     // Check parameters
     assert_eq!(string_param, "hello");
     assert_eq!(int_param, 42);
-    assert_eq!(float_param, 3.14);
-    assert_eq!(bool_param, true);
+    assert_eq!(float_param, std::f64::consts::PI);
+    assert!(bool_param);
     assert_eq!(array_param, vec![1, 2, 3]);
 
     // Try to get a non-existent parameter

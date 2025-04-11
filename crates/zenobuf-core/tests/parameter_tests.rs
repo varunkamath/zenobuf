@@ -18,10 +18,10 @@ fn test_parameter_new_int() {
 
 #[test]
 fn test_parameter_new_float() {
-    let param = Parameter::new("float_param", 3.14).unwrap();
+    let param = Parameter::new("float_param", std::f64::consts::PI).unwrap();
 
     assert_eq!(param.name(), "float_param");
-    assert_eq!(param.get_value::<f64>().unwrap(), 3.14);
+    assert_eq!(param.get_value::<f64>().unwrap(), std::f64::consts::PI);
 }
 
 #[test]
@@ -29,7 +29,7 @@ fn test_parameter_new_bool() {
     let param = Parameter::new("bool_param", true).unwrap();
 
     assert_eq!(param.name(), "bool_param");
-    assert_eq!(param.get_value::<bool>().unwrap(), true);
+    assert!(param.get_value::<bool>().unwrap());
 }
 
 #[test]
@@ -89,8 +89,8 @@ fn test_parameter_serialization() {
     );
 
     // Test with float parameter
-    let param = Parameter::new("float_param", 3.14).unwrap();
-    let serialized = serde_json::to_string(&3.14).unwrap();
+    let param = Parameter::new("float_param", std::f64::consts::PI).unwrap();
+    let serialized = serde_json::to_string(&std::f64::consts::PI).unwrap();
     assert_eq!(
         serde_json::to_string(&param.get_value::<f64>().unwrap()).unwrap(),
         serialized

@@ -1,4 +1,17 @@
 [target.aarch64-unknown-linux-gnu]
-pre-build = [
-    "apt-get update && apt-get install -y protobuf-compiler"
-]
+pre-build = ['''
+set -e
+apt-get update && apt-get install -y autoconf automake libtool curl make g++ unzip
+cd /tmp
+curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v3.20.3/protobuf-cpp-3.20.3.tar.gz
+tar -xzf protobuf-cpp-3.20.3.tar.gz
+cd protobuf-3.20.3
+./configure
+make -j$(nproc)
+make install
+ldconfig
+export PATH="/usr/local/bin:$PATH"
+protoc --version
+cd /tmp
+rm -rf protobuf-3.20.3 protobuf-cpp-3.20.3.tar.gz
+''']
