@@ -1,6 +1,6 @@
 # Zenobuf
 
-A simpler ROS-like framework in Rust, using Zenoh for transport and Protocol Buffers for serialization.
+A simple ROS-like framework in Rust, using Zenoh for transport and Protocol Buffers for serialization.
 
 ## Overview
 
