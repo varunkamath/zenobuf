@@ -13,17 +13,22 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-      
+
+      - name: Install protobuf compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+
       - name: Build documentation
         run: cargo doc --no-deps --all-features --workspace
-      
+
       - name: Create index.html
         run: |
           echo '<meta http-equiv="refresh" content="0; url=zenobuf_core/index.html">' > target/doc/index.html
-      
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
