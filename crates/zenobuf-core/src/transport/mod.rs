@@ -1,7 +1,9 @@
 //! Transport layer abstraction for Zenobuf
 
+pub mod mock;
 mod zenoh;
 
+pub use self::mock::MockTransport;
 pub use self::zenoh::ZenohTransport;
 
 use crate::error::Result;

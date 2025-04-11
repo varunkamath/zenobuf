@@ -13,3 +13,7 @@ proc-macro = true
 proc-macro2 = "1"
 quote = "1"
 syn = { version = "2", features = ["full"] }
+
+[dev-dependencies]
+zenobuf-core = { path = "../zenobuf-core" }
+prost = "0.13.5"

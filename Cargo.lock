@@ -3607,6 +3607,7 @@ dependencies = [
  "console",
  "futures",
  "indicatif",
+ "prost",
  "serde",
  "serde_json",
  "tokio",
@@ -3653,8 +3654,10 @@ name = "zenobuf-macros"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
+ "prost",
  "quote",
  "syn 2.0.100",
+ "zenobuf-core",
 ]
 
 [[package]]
