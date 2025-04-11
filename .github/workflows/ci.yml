@@ -12,7 +12,6 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
   RUSTFLAGS: "-D warnings"
-  RUSTC_WRAPPER: sccache
   SCCACHE_CACHE_SIZE: 2G
 
 jobs:
@@ -40,6 +39,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install sccache
         uses: mozilla-actions/sccache-action@v0.0.4
+      - name: Set RUSTC_WRAPPER
+        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Install protobuf compiler
         run: |
           sudo apt-get update
@@ -53,6 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Clear RUSTC_WRAPPER
+        run: echo "RUSTC_WRAPPER=" >> $GITHUB_ENV
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check advisories
@@ -64,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Clear RUSTC_WRAPPER
+        run: echo "RUSTC_WRAPPER=" >> $GITHUB_ENV
       - uses: EmbarkStudios/cargo-deny-action@v2
         with:
           command: check licenses
@@ -84,6 +89,12 @@ jobs:
       - name: Install sccache (Linux/macOS)
         if: runner.os != 'Windows'
         uses: mozilla-actions/sccache-action@v0.0.4
+      - name: Set RUSTC_WRAPPER (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Set RUSTC_WRAPPER (Windows)
+        if: runner.os == 'Windows'
+        run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
       - name: Install protobuf compiler (Ubuntu)
         if: runner.os == 'Linux'
         run: |
@@ -145,6 +156,12 @@ jobs:
       - name: Install sccache (Linux/macOS)
         if: runner.os != 'Windows'
         uses: mozilla-actions/sccache-action@v0.0.4
+      - name: Set RUSTC_WRAPPER (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Set RUSTC_WRAPPER (Windows)
+        if: runner.os == 'Windows'
+        run: echo "RUSTC_WRAPPER=" >> $env:GITHUB_ENV
 
       - name: Install protobuf compiler (Ubuntu)
         if: runner.os == 'Linux' && !matrix.platform.cross
