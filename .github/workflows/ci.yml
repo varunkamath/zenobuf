@@ -179,7 +179,7 @@ jobs:
         run: git-cliff --latest --strip header > release-notes.md
 
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             artifacts/**/*
