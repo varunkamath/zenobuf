@@ -1,10 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-    "zenobuf-core",
-    "zenobuf-macros",
-    "zenobuf-cli",
-    "zenobuf-examples",
+    "crates/*"
 ]
 
 [workspace.package]
