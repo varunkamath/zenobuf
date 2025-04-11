@@ -1,0 +1,1 @@
+searchState.loadedDescShard("zenobuf_macros", 0, "Procedural macros for the Zenobuf framework\nDerives the <code>Message</code> trait for a Protocol Buffer message")

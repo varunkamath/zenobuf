@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ParamCommands"],"fn":["execute","get_param","list_params","set_param"],"struct":["GetArgs","SetArgs"]};

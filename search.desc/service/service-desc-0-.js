@@ -1,0 +1,1 @@
+searchState.loadedDescShard("service", 0, "Example service for the Zenobuf framework")

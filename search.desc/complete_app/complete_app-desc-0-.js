@@ -1,0 +1,1 @@
+searchState.loadedDescShard("complete_app", 0, "Complete application example for the Zenobuf framework")

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["decode_message","encode_message","message_type_name"],"trait":["Message"]};

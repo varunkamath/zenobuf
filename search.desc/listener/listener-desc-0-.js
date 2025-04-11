@@ -1,0 +1,1 @@
+searchState.loadedDescShard("listener", 0, "Example subscriber (listener) for the Zenobuf framework")
