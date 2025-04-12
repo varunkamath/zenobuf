@@ -15,5 +15,5 @@ quote = "1"
 syn = { version = "2", features = ["full"] }
 
 [dev-dependencies]
-zenobuf-core = { path = "../zenobuf-core" }
+zenobuf-core = { path = "../zenobuf-core", version = "0.2.0" }
 prost = "0.13.5"
