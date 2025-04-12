@@ -1,14 +1,14 @@
 [package]
 name = "zenobuf-examples"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 authors = ["Zenobuf Team"]
 description = "Example applications for the Zenobuf framework"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-zenobuf-core = { path = "../zenobuf-core", version = "0.2.0" }
-zenobuf-macros = { path = "../zenobuf-macros", version = "0.2.0" }
+zenobuf-core = { path = "../zenobuf-core", version = "0.2.3" }
+zenobuf-macros = { path = "../zenobuf-macros", version = "0.2.3" }
 prost = "0.13.5"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
