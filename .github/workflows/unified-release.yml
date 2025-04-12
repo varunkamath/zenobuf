@@ -324,6 +324,8 @@ jobs:
     needs: [release, build]
     if: ${{ needs.release.outputs.is_dry_run != 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -338,6 +340,20 @@ jobs:
       - name: Display structure of downloaded files
         run: find artifacts -type f | sort
 
+      - name: Prepare artifacts for upload
+        run: |
+          mkdir -p release-assets
+          # Copy and rename artifacts to have consistent names
+          find artifacts -type f -name "zenobuf-cli*" -not -name "*.d" -not -name "*.pdb" | while read file; do
+            platform_dir=$(dirname "$file" | cut -d'/' -f2)
+            if [[ "$file" == *".exe"* ]]; then
+              cp "$file" "release-assets/zenobuf-cli-${platform_dir}.exe"
+            else
+              cp "$file" "release-assets/zenobuf-cli-${platform_dir}"
+            fi
+          done
+          ls -la release-assets/
+
       - name: Install git-cliff
         run: cargo install git-cliff
 
@@ -350,8 +366,7 @@ jobs:
           tag_name: v${{ needs.release.outputs.new_version }}
           name: Release v${{ needs.release.outputs.new_version }}
           body_path: release-notes.md
-          files: |
-            artifacts/**/*
+          files: release-assets/*
           draft: false
           prerelease: false
         env:
