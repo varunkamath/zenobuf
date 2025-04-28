@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 zenobuf-core = { path = "../zenobuf-core", version = "0.2.3" }
-zenoh = "1.3.3"
+zenoh = "1.3.4"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 console = "0.15"
