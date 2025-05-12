@@ -318,9 +318,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.5.36"
+version = "4.5.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2df961d8c8a0d08aa9945718ccf584145eee3f3aa06cddbeac12933781102e04"
+checksum = "ed93b9805f8ba930df42c2590f05453d5ec36cbb85d018868a5b24d31f6ac000"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -328,9 +328,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.5.36"
+version = "4.5.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "132dbda40fb6753878316a489d5a1242a8ef2f0d9e47ba01c951ea8aa7d013a5"
+checksum = "379026ff283facf611b0ea629334361c4211d1b12ee01024eec1591133b04120"
 dependencies = [
  "anstream",
  "anstyle",
@@ -3600,7 +3600,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-cli"
-version = "0.2.0"
+version = "0.2.3"
 dependencies = [
  "chrono",
  "clap",
@@ -3619,7 +3619,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-core"
-version = "0.2.0"
+version = "0.2.3"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3636,7 +3636,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-examples"
-version = "0.2.0"
+version = "0.2.3"
 dependencies = [
  "prost",
  "prost-build",
@@ -3651,7 +3651,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-macros"
-version = "0.2.0"
+version = "0.2.3"
 dependencies = [
  "proc-macro2",
  "prost",
