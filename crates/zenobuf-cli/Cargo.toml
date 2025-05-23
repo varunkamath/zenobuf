@@ -1,14 +1,14 @@
 [package]
 name = "zenobuf-cli"
-version = "0.2.1"
+version = "0.2.4"
 edition = "2021"
 authors = ["Zenobuf Team"]
 description = "Command-line tools for the Zenobuf framework"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-zenobuf-core = { path = "../zenobuf-core", version = "0.2" }
-zenoh = "1.3.3"
+zenobuf-core = { path = "../zenobuf-core", version = "0.2.4" }
+zenoh = "1.3.4"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 console = "0.15"
