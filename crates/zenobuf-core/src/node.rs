@@ -1,17 +1,158 @@
 //! Node abstraction for Zenobuf
 
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
+use std::marker::PhantomData;
 
 use crate::client::Client;
 use crate::error::{Error, Result};
 use crate::message::Message;
 use crate::parameter::Parameter;
 use crate::publisher::Publisher;
-use crate::qos::QosProfile;
+use crate::qos::{QosProfile, QosPreset};
 use crate::service::Service;
 use crate::subscriber::Subscriber;
 use crate::transport::ZenohTransport;
+
+/// A guard that automatically cleans up resources when dropped
+pub struct DropGuard {
+    cleanup: Box<dyn FnOnce() + Send + Sync>,
+}
+
+impl DropGuard {
+    pub fn new<F>(cleanup: F) -> Self
+    where
+        F: FnOnce() + Send + Sync + 'static,
+    {
+        Self {
+            cleanup: Box::new(cleanup),
+        }
+    }
+}
+
+impl Drop for DropGuard {
+    fn drop(&mut self) {
+        // Take the cleanup function and call it
+        let cleanup = std::mem::replace(&mut self.cleanup, Box::new(|| {}));
+        cleanup();
+    }
+}
+
+/// A handle to a publisher with automatic cleanup
+pub struct PublisherHandle<M: Message> {
+    publisher: Arc<Publisher<M>>,
+    _cleanup: DropGuard,
+}
+
+impl<M: Message> PublisherHandle<M> {
+    fn new(publisher: Arc<Publisher<M>>) -> Self {
+        let cleanup = DropGuard::new(move || {
+            // Cleanup logic can be added here if needed
+        });
+
+        Self {
+            publisher,
+            _cleanup: cleanup,
+        }
+    }
+
+    /// Get the underlying publisher
+    pub fn publisher(&self) -> &Arc<Publisher<M>> {
+        &self.publisher
+    }
+
+    /// Publish a message
+    pub fn publish(&self, message: &M) -> Result<()> {
+        self.publisher.publish(message)
+    }
+
+    /// Get the topic name
+    pub fn topic(&self) -> &str {
+        self.publisher.topic()
+    }
+}
+
+/// A handle to a subscriber with automatic cleanup
+pub struct SubscriberHandle {
+    subscriber: Arc<Subscriber>,
+    _cleanup: DropGuard,
+}
+
+impl SubscriberHandle {
+    fn new(subscriber: Arc<Subscriber>) -> Self {
+        let cleanup = DropGuard::new(move || {
+            // Cleanup logic can be added here if needed
+        });
+
+        Self {
+            subscriber,
+            _cleanup: cleanup,
+        }
+    }
+
+    /// Get the underlying subscriber
+    pub fn subscriber(&self) -> &Arc<Subscriber> {
+        &self.subscriber
+    }
+}
+
+/// A handle to a service with automatic cleanup
+pub struct ServiceHandle {
+    service: Arc<Service>,
+    _cleanup: DropGuard,
+}
+
+impl ServiceHandle {
+    fn new(service: Arc<Service>) -> Self {
+        let cleanup = DropGuard::new(move || {
+            // Cleanup logic can be added here if needed
+        });
+
+        Self {
+            service,
+            _cleanup: cleanup,
+        }
+    }
+
+    /// Get the underlying service
+    pub fn service(&self) -> &Arc<Service> {
+        &self.service
+    }
+}
+
+/// A handle to a client with automatic cleanup
+pub struct ClientHandle<Req: Message, Res: Message> {
+    client: Arc<Client<Req, Res>>,
+    _cleanup: DropGuard,
+}
+
+impl<Req: Message, Res: Message> ClientHandle<Req, Res> {
+    fn new(client: Arc<Client<Req, Res>>) -> Self {
+        let cleanup = DropGuard::new(move || {
+            // Cleanup logic can be added here if needed
+        });
+
+        Self {
+            client,
+            _cleanup: cleanup,
+        }
+    }
+
+    /// Get the underlying client
+    pub fn client(&self) -> &Arc<Client<Req, Res>> {
+        &self.client
+    }
+
+    /// Call the service
+    pub fn call(&self, request: &Req) -> Result<Res> {
+        self.client.call(request)
+    }
+
+    /// Call the service asynchronously
+    pub async fn call_async(&self, request: &Req) -> Result<Res> {
+        self.client.call_async(request).await
+    }
+}
 
 /// Node abstraction for Zenobuf
 ///
@@ -72,7 +213,7 @@ impl Node {
         {
             let publishers = self.publishers.lock().unwrap();
             if publishers.contains_key(&topic_name) {
-                return Err(Error::TopicAlreadyExists(topic_name));
+                return Err(Error::topic_already_exists(&topic_name, &self.name));
             }
         } // MutexGuard is dropped here
 
@@ -107,7 +248,7 @@ impl Node {
         {
             let subscribers = self.subscribers.lock().unwrap();
             if subscribers.contains_key(&topic_name) {
-                return Err(Error::TopicAlreadyExists(topic_name));
+                return Err(Error::topic_already_exists(&topic_name, &self.name));
             }
         } // MutexGuard is dropped here
 
@@ -144,7 +285,7 @@ impl Node {
         {
             let services = self.services.lock().unwrap();
             if services.contains_key(&full_service_name) {
-                return Err(Error::ServiceAlreadyExists(full_service_name));
+                return Err(Error::service_already_exists(&full_service_name, &self.name));
             }
         } // MutexGuard is dropped here
 
@@ -176,7 +317,7 @@ impl Node {
         // Check if the client already exists
         let mut clients = self.clients.lock().unwrap();
         if clients.contains_key(&full_service_name) {
-            return Err(Error::ServiceAlreadyExists(full_service_name));
+            return Err(Error::service_already_exists(&full_service_name, &self.name));
         }
 
         // Create the client
@@ -216,7 +357,7 @@ impl Node {
         if let Some(param) = parameters.get(name) {
             param.get_value()
         } else {
-            Err(Error::Parameter(format!("Parameter not found: {}", name)))
+            Err(Error::parameter(name, "Parameter not found"))
         }
     }
 
@@ -233,5 +374,211 @@ impl Node {
         // For now, we just wait forever
         std::future::pending::<()>().await;
         Ok(())
+    }
+
+    // Builder pattern methods for simplified API
+
+    /// Creates a publisher builder for the given topic
+    pub fn publisher<M: Message>(&self, topic: &str) -> PublisherBuilder<M> {
+        PublisherBuilder::new(self, topic)
+    }
+
+    /// Creates a subscriber builder for the given topic
+    pub fn subscriber<M: Message>(&self, topic: &str) -> SubscriberBuilder<M> {
+        SubscriberBuilder::new(self, topic)
+    }
+
+    /// Creates a service builder for the given service name
+    pub fn service<Req: Message, Res: Message>(&self, name: &str) -> ServiceBuilder<Req, Res> {
+        ServiceBuilder::new(self, name)
+    }
+
+    /// Creates a client builder for the given service name
+    pub fn client<Req: Message, Res: Message>(&self, name: &str) -> ClientBuilder<Req, Res> {
+        ClientBuilder::new(self, name)
+    }
+
+    // Simplified convenience methods
+
+    /// Creates a publisher with default QoS
+    pub async fn publish<M: Message>(&self, topic: &str) -> Result<Arc<Publisher<M>>> {
+        self.create_publisher(topic, QosProfile::default()).await
+    }
+
+    /// Creates a subscriber with default QoS and a callback
+    pub async fn subscribe<M: Message, F>(
+        &self,
+        topic: &str,
+        callback: F,
+    ) -> Result<Arc<Subscriber>>
+    where
+        F: Fn(M) + Send + Sync + 'static,
+    {
+        self.create_subscriber(topic, QosProfile::default(), callback)
+            .await
+    }
+}
+
+/// Builder for creating publishers with fluent API
+pub struct PublisherBuilder<'a, M: Message> {
+    node: &'a Node,
+    topic: String,
+    qos: QosProfile,
+    _phantom: PhantomData<M>,
+}
+
+impl<'a, M: Message> PublisherBuilder<'a, M> {
+    fn new(node: &'a Node, topic: &str) -> Self {
+        Self {
+            node,
+            topic: topic.to_string(),
+            qos: QosProfile::default(),
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Sets the QoS profile
+    pub fn with_qos(mut self, qos: QosProfile) -> Self {
+        self.qos = qos;
+        self
+    }
+
+    /// Sets the QoS preset
+    pub fn with_qos_preset(mut self, preset: QosPreset) -> Self {
+        self.qos = preset.into();
+        self
+    }
+
+    /// Sets reliability
+    pub fn reliable(mut self) -> Self {
+        self.qos.reliability = crate::qos::Reliability::Reliable;
+        self
+    }
+
+    /// Sets best effort reliability
+    pub fn best_effort(mut self) -> Self {
+        self.qos.reliability = crate::qos::Reliability::BestEffort;
+        self
+    }
+
+    /// Sets the history depth
+    pub fn with_depth(mut self, depth: usize) -> Self {
+        self.qos.depth = depth;
+        self
+    }
+
+    /// Builds the publisher
+    pub async fn build(self) -> Result<PublisherHandle<M>> {
+        let publisher = self.node.create_publisher(&self.topic, self.qos).await?;
+        Ok(PublisherHandle::new(publisher))
+    }
+}
+
+/// Builder for creating subscribers with fluent API
+pub struct SubscriberBuilder<'a, M: Message> {
+    node: &'a Node,
+    topic: String,
+    qos: QosProfile,
+    _phantom: PhantomData<M>,
+}
+
+impl<'a, M: Message> SubscriberBuilder<'a, M> {
+    fn new(node: &'a Node, topic: &str) -> Self {
+        Self {
+            node,
+            topic: topic.to_string(),
+            qos: QosProfile::default(),
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Sets the QoS profile
+    pub fn with_qos(mut self, qos: QosProfile) -> Self {
+        self.qos = qos;
+        self
+    }
+
+    /// Sets the QoS preset
+    pub fn with_qos_preset(mut self, preset: QosPreset) -> Self {
+        self.qos = preset.into();
+        self
+    }
+
+    /// Sets reliability
+    pub fn reliable(mut self) -> Self {
+        self.qos.reliability = crate::qos::Reliability::Reliable;
+        self
+    }
+
+    /// Sets best effort reliability
+    pub fn best_effort(mut self) -> Self {
+        self.qos.reliability = crate::qos::Reliability::BestEffort;
+        self
+    }
+
+    /// Sets the history depth
+    pub fn with_depth(mut self, depth: usize) -> Self {
+        self.qos.depth = depth;
+        self
+    }
+
+    /// Builds the subscriber with a callback
+    pub async fn build<F>(self, callback: F) -> Result<SubscriberHandle>
+    where
+        F: Fn(M) + Send + Sync + 'static,
+    {
+        let subscriber = self.node
+            .create_subscriber(&self.topic, self.qos, callback)
+            .await?;
+        Ok(SubscriberHandle::new(subscriber))
+    }
+}
+
+/// Builder for creating services with fluent API
+pub struct ServiceBuilder<'a, Req: Message, Res: Message> {
+    node: &'a Node,
+    name: String,
+    _phantom: PhantomData<(Req, Res)>,
+}
+
+impl<'a, Req: Message, Res: Message> ServiceBuilder<'a, Req, Res> {
+    fn new(node: &'a Node, name: &str) -> Self {
+        Self {
+            node,
+            name: name.to_string(),
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Builds the service with a handler
+    pub async fn build<F>(self, handler: F) -> Result<ServiceHandle>
+    where
+        F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
+    {
+        let service = self.node.create_service(&self.name, handler).await?;
+        Ok(ServiceHandle::new(service))
+    }
+}
+
+/// Builder for creating clients with fluent API
+pub struct ClientBuilder<'a, Req: Message, Res: Message> {
+    node: &'a Node,
+    name: String,
+    _phantom: PhantomData<(Req, Res)>,
+}
+
+impl<'a, Req: Message, Res: Message> ClientBuilder<'a, Req, Res> {
+    fn new(node: &'a Node, name: &str) -> Self {
+        Self {
+            node,
+            name: name.to_string(),
+            _phantom: PhantomData,
+        }
+    }
+
+    /// Builds the client
+    pub fn build(self) -> Result<ClientHandle<Req, Res>> {
+        let client = self.node.create_client(&self.name)?;
+        Ok(ClientHandle::new(client))
     }
 }

@@ -1,14 +1,51 @@
 //! Transport layer abstraction for Zenobuf
 
-pub mod mock;
-mod zenoh;
-
-pub use self::mock::MockTransport;
-pub use self::zenoh::ZenohTransport;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
 
 use crate::error::Result;
 use crate::message::Message;
-use futures::future::BoxFuture;
+mod zenoh;
+
+pub use self::zenoh::ZenohTransport;
+
+/// A boxed future for async operations
+pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
+
+/// Transport layer abstraction
+///
+/// This trait defines the interface that all transport implementations must provide.
+/// It allows for pluggable transport layers while maintaining a consistent API.
+#[async_trait::async_trait]
+pub trait Transport: Send + Sync + 'static {
+    /// Create a publisher for the given topic
+    async fn create_publisher<M: Message>(&self, topic: &str) -> Result<Arc<crate::publisher::Publisher<M>>>;
+
+    /// Create a subscriber for the given topic with a callback
+    async fn create_subscriber<M: Message, F>(
+        &self,
+        topic: &str,
+        callback: F,
+    ) -> Result<Arc<crate::subscriber::Subscriber>>
+    where
+        F: Fn(M) + Send + Sync + 'static;
+
+    /// Create a service for the given service name with a handler
+    async fn create_service<Req: Message, Res: Message, F>(
+        &self,
+        service_name: &str,
+        handler: F,
+    ) -> Result<Arc<crate::service::Service>>
+    where
+        F: Fn(Req) -> Result<Res> + Send + Sync + 'static;
+
+    /// Create a client for the given service name
+    fn create_client<Req: Message, Res: Message>(
+        &self,
+        service_name: &str,
+    ) -> Result<Arc<crate::client::Client<Req, Res>>>;
+}
 
 /// Publisher abstraction
 pub trait Publisher<M: Message>: Send + Sync + 'static {

@@ -15,15 +15,15 @@ pub mod service;
 pub mod subscriber;
 pub mod time;
 pub mod transport;
-pub mod util;
 
 // Re-export key types
 pub use client::Client;
 pub use error::{Error, Result};
 pub use message::Message;
-pub use node::Node;
+pub use node::{Node, PublisherHandle, SubscriberHandle, ServiceHandle, ClientHandle, DropGuard};
 pub use parameter::Parameter;
 pub use publisher::Publisher;
-pub use qos::QosProfile;
+pub use qos::{QosProfile, QosPreset};
 pub use service::Service;
 pub use subscriber::Subscriber;
+pub use transport::{ZenohTransport, Transport};

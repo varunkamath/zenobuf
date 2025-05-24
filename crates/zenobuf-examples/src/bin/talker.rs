@@ -13,9 +13,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a node
     let node = Node::new("talker").await?;
 
-    // Create a publisher
+    // Create a publisher using the builder pattern
     let publisher = node
-        .create_publisher::<Pose>("pose", QosProfile::default())
+        .publisher::<Pose>("pose")
+        .with_qos(QosProfile::default())
+        .build()
         .await?;
 
     // Create a message
