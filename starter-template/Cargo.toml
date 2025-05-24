@@ -1,0 +1,16 @@
+[package]
+name = "my-zenobuf-app"
+version = "0.1.0"
+edition = "2021"
+
+# This prevents the starter template from being part of the main workspace
+[workspace]
+
+[dependencies]
+zenobuf-core = { path = "../crates/zenobuf-core" }
+zenobuf-macros = { path = "../crates/zenobuf-macros" }
+prost = "0.13"
+tokio = { version = "1", features = ["full"] }
+
+[build-dependencies]
+prost-build = "0.13"

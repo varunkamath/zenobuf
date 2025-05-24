@@ -50,29 +50,52 @@ message Point {
 }
 ```
 
-Generate Rust code from your `.proto` files using `prost-build` in your `build.rs`:
+**Step 1:** Add dependencies to your `Cargo.toml`:
+
+```toml
+[dependencies]
+zenobuf-core = "0.2"
+zenobuf-macros = "0.2"
+prost = "0.13"
+tokio = { version = "1", features = ["full"] }
+
+[build-dependencies]
+prost-build = "0.13"
+```
+
+**Step 2:** Create a `build.rs` file that automatically adds the derive macro:
 
 ```rust
 fn main() -> std::io::Result<()> {
-    prost_build::compile_protos(&["protos/my_messages.proto"], &["protos"])?;
+    prost_build::Config::new()
+        .type_attribute(".", "#[derive(zenobuf_macros::ZenobufMessage)]")
+        .compile_protos(&["protos/my_messages.proto"], &["protos"])?;
     Ok(())
 }
 ```
 
-Implement the `Message` trait for your generated types:
+**Step 3:** Include the generated code in your `lib.rs` or `main.rs`:
 
 ```rust
-use zenobuf_macros::ZenobufMessage;
-
 pub mod proto {
     include!(concat!(env!("OUT_DIR"), "/my_messages.rs"));
-    
-    impl zenobuf_core::Message for Point {
-        fn type_name() -> &'static str {
-            "my_messages.Point"
-        }
-    }
 }
+```
+
+**That's it!** The `ZenobufMessage` derive macro is automatically added to all your protobuf types.
+
+### 🚀 Quick Start Template
+
+For the fastest way to get started, copy the [starter template](starter-template/) which includes:
+- Pre-configured `Cargo.toml` and `build.rs`
+- Example protobuf definitions
+- Complete working example with publisher, subscriber, service, and client
+- Step-by-step customization guide
+
+```bash
+cp -r starter-template my-zenobuf-app
+cd my-zenobuf-app
+cargo run
 ```
 
 #### Creating a Node
@@ -84,9 +107,9 @@ use zenobuf_core::Node;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a node
     let node = Node::new("my_node").await?;
-    
+
     // ...
-    
+
     Ok(())
 }
 ```
@@ -98,7 +121,10 @@ use zenobuf_core::{Node, QosProfile};
 use my_crate::proto::Point;
 
 // Create a publisher
-let publisher = node.create_publisher::<Point>("point_topic", QosProfile::default())?;
+let publisher = node
+    .publisher::<Point>("point_topic")
+    .build()
+    .await?;
 
 // Create a message
 let point = Point {
@@ -118,13 +144,12 @@ use zenobuf_core::{Node, QosProfile};
 use my_crate::proto::Point;
 
 // Create a subscriber
-let _subscriber = node.create_subscriber::<Point>(
-    "point_topic",
-    QosProfile::default(),
-    |point| {
+let _subscriber = node
+    .subscriber::<Point>("point_topic")
+    .build(|point| {
         println!("Received point: ({}, {}, {})", point.x, point.y, point.z);
-    },
-)?;
+    })
+    .await?;
 
 // Spin the node
 node.spin().await?;
@@ -137,15 +162,14 @@ use zenobuf_core::{Node, Result};
 use my_crate::proto::{AddRequest, AddResponse};
 
 // Create a service
-let _service = node.create_service::<AddRequest, AddResponse, _>(
-    "add_service",
-    |request| {
-        let response = AddResponse {
+let _service = node
+    .service::<AddRequest, AddResponse>("add_service")
+    .build(|request| {
+        Ok(AddResponse {
             sum: request.a + request.b,
-        };
-        Ok(response)
-    },
-)?;
+        })
+    })
+    .await?;
 
 // Spin the node
 node.spin().await?;
