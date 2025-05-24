@@ -6,9 +6,10 @@ use std::time::Duration;
 ///
 /// This enum provides convenient presets for common QoS configurations,
 /// making it easier to configure quality of service without verbose setup.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum QosPreset {
     /// Default QoS profile - reliable, volatile, keep last 10
+    #[default]
     Default,
     /// Optimized for sensor data - best effort, volatile, keep last 5
     SensorData,
@@ -197,11 +198,5 @@ impl From<QosPreset> for QosProfile {
             },
             QosPreset::Custom(profile) => profile,
         }
-    }
-}
-
-impl Default for QosPreset {
-    fn default() -> Self {
-        QosPreset::Default
     }
 }

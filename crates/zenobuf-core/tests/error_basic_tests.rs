@@ -12,37 +12,70 @@ fn test_error_display() {
     assert_eq!(error.to_string(), "Node 'test_node' already exists");
 
     let error = Error::topic_already_exists("test_topic", "test_node");
-    assert_eq!(error.to_string(), "Topic 'test_topic' already exists on node 'test_node'");
+    assert_eq!(
+        error.to_string(),
+        "Topic 'test_topic' already exists on node 'test_node'"
+    );
 
     let error = Error::service_already_exists("test_service", "test_node");
-    assert_eq!(error.to_string(), "Service 'test_service' already exists on node 'test_node'");
+    assert_eq!(
+        error.to_string(),
+        "Service 'test_service' already exists on node 'test_node'"
+    );
 
     let error = Error::service_call_timeout("test_service", 5000);
-    assert_eq!(error.to_string(), "Service call to 'test_service' timed out after 5000ms");
+    assert_eq!(
+        error.to_string(),
+        "Service call to 'test_service' timed out after 5000ms"
+    );
 
     let error = Error::service_call_failed("test_service", "connection failed");
-    assert_eq!(error.to_string(), "Service call to 'test_service' failed: connection failed");
+    assert_eq!(
+        error.to_string(),
+        "Service call to 'test_service' failed: connection failed"
+    );
 
     let error = Error::parameter("test_param", "failed to set parameter");
-    assert_eq!(error.to_string(), "Parameter 'test_param' error: failed to set parameter");
+    assert_eq!(
+        error.to_string(),
+        "Parameter 'test_param' error: failed to set parameter"
+    );
 
     let error = Error::node("test_node", "failed to create node");
-    assert_eq!(error.to_string(), "Node 'test_node' error: failed to create node");
+    assert_eq!(
+        error.to_string(),
+        "Node 'test_node' error: failed to create node"
+    );
 
     let error = Error::publisher("test_topic", "failed to create publisher");
-    assert_eq!(error.to_string(), "Publisher for topic 'test_topic' error: failed to create publisher");
+    assert_eq!(
+        error.to_string(),
+        "Publisher for topic 'test_topic' error: failed to create publisher"
+    );
 
     let error = Error::subscriber("test_topic", "failed to create subscriber");
-    assert_eq!(error.to_string(), "Subscriber for topic 'test_topic' error: failed to create subscriber");
+    assert_eq!(
+        error.to_string(),
+        "Subscriber for topic 'test_topic' error: failed to create subscriber"
+    );
 
     let error = Error::service("test_service", "failed to create service");
-    assert_eq!(error.to_string(), "Service 'test_service' error: failed to create service");
+    assert_eq!(
+        error.to_string(),
+        "Service 'test_service' error: failed to create service"
+    );
 
     let error = Error::client("test_service", "failed to create client");
-    assert_eq!(error.to_string(), "Client for service 'test_service' error: failed to create client");
+    assert_eq!(
+        error.to_string(),
+        "Client for service 'test_service' error: failed to create client"
+    );
 
     let error = Error::configuration("invalid configuration");
-    assert_eq!(error.to_string(), "Configuration error: invalid configuration");
+    assert_eq!(
+        error.to_string(),
+        "Configuration error: invalid configuration"
+    );
 
     let error = Error::network("connection timeout");
     assert_eq!(error.to_string(), "Network error: connection timeout");

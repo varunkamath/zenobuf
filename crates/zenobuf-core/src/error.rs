@@ -58,10 +58,7 @@ pub enum Error {
 
     /// Error when a service call times out
     #[error("Service call to '{service}' timed out after {timeout_ms}ms")]
-    ServiceCallTimeout {
-        service: String,
-        timeout_ms: u64,
-    },
+    ServiceCallTimeout { service: String, timeout_ms: u64 },
 
     /// Error when a service call fails
     #[error("Service call to '{service}' failed: {reason}")]
@@ -211,18 +208,12 @@ impl Error {
     }
 
     /// Create a message serialization error
-    pub fn message_serialization(
-        source: prost::EncodeError,
-        type_name: &'static str,
-    ) -> Self {
+    pub fn message_serialization(source: prost::EncodeError, type_name: &'static str) -> Self {
         Error::MessageSerialization { source, type_name }
     }
 
     /// Create a message deserialization error
-    pub fn message_deserialization(
-        source: prost::DecodeError,
-        type_name: &'static str,
-    ) -> Self {
+    pub fn message_deserialization(source: prost::DecodeError, type_name: &'static str) -> Self {
         Error::MessageDeserialization { source, type_name }
     }
 
@@ -232,10 +223,7 @@ impl Error {
     }
 
     /// Create a topic already exists error
-    pub fn topic_already_exists(
-        topic: impl Into<String>,
-        node: impl Into<String>,
-    ) -> Self {
+    pub fn topic_already_exists(topic: impl Into<String>, node: impl Into<String>) -> Self {
         Error::TopicAlreadyExists {
             topic: topic.into(),
             node: node.into(),
@@ -243,10 +231,7 @@ impl Error {
     }
 
     /// Create a service already exists error
-    pub fn service_already_exists(
-        service: impl Into<String>,
-        node: impl Into<String>,
-    ) -> Self {
+    pub fn service_already_exists(service: impl Into<String>, node: impl Into<String>) -> Self {
         Error::ServiceAlreadyExists {
             service: service.into(),
             node: node.into(),
@@ -254,10 +239,7 @@ impl Error {
     }
 
     /// Create a service call timeout error
-    pub fn service_call_timeout(
-        service: impl Into<String>,
-        timeout_ms: u64,
-    ) -> Self {
+    pub fn service_call_timeout(service: impl Into<String>, timeout_ms: u64) -> Self {
         Error::ServiceCallTimeout {
             service: service.into(),
             timeout_ms,
@@ -265,10 +247,7 @@ impl Error {
     }
 
     /// Create a service call failed error
-    pub fn service_call_failed(
-        service: impl Into<String>,
-        reason: impl Into<String>,
-    ) -> Self {
+    pub fn service_call_failed(service: impl Into<String>, reason: impl Into<String>) -> Self {
         Error::ServiceCallFailed {
             service: service.into(),
             reason: reason.into(),

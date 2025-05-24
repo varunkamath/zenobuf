@@ -95,7 +95,8 @@ impl<M: Message> ZenohPublisher<M> {
     /// Creates a new Zenoh publisher
     async fn new(session: Arc<zenoh::Session>, topic: String) -> Result<Self> {
         let topic_clone = topic.clone();
-        let key_expr = KeyExpr::try_from(topic.clone()).map_err(|e| Error::publisher(topic_clone, e.to_string()))?;
+        let key_expr = KeyExpr::try_from(topic.clone())
+            .map_err(|e| Error::publisher(topic_clone, e.to_string()))?;
         let publisher = session
             .declare_publisher(key_expr)
             .await
@@ -138,7 +139,8 @@ impl ZenohSubscriber {
     where
         F: Fn(M) + Send + Sync + 'static,
     {
-        let key_expr = KeyExpr::try_from(topic).map_err(|e| Error::subscriber(topic, e.to_string()))?;
+        let key_expr =
+            KeyExpr::try_from(topic).map_err(|e| Error::subscriber(topic, e.to_string()))?;
         let subscriber = session
             .declare_subscriber(key_expr)
             .callback(move |sample| {
@@ -182,8 +184,8 @@ impl ZenohService {
     where
         F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
     {
-        let key_expr =
-            KeyExpr::try_from(service_name).map_err(|e| Error::service(service_name, e.to_string()))?;
+        let key_expr = KeyExpr::try_from(service_name)
+            .map_err(|e| Error::service(service_name, e.to_string()))?;
         tracing::info!("Declaring service: {}", service_name);
         let queryable = session
             .declare_queryable(key_expr)
@@ -274,8 +276,8 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
         futures::executor::block_on(async {
             tracing::info!("Calling service: {}", self.service_name);
             let service_name_clone = self.service_name.clone();
-            let key_expr =
-                KeyExpr::try_from(self.service_name.clone()).map_err(|e| Error::client(service_name_clone, e.to_string()))?;
+            let key_expr = KeyExpr::try_from(self.service_name.clone())
+                .map_err(|e| Error::client(service_name_clone, e.to_string()))?;
 
             let bytes = encode_message(request);
             let selector = key_expr.clone();
@@ -321,7 +323,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                     tracing::error!("Sample error: {}", e);
                                     last_error = Some(Error::service_call_failed(
                                         self.service_name.clone(),
-                                        format!("Error in response: {}", e)
+                                        format!("Error in response: {}", e),
                                     ));
                                 }
                             },
@@ -329,7 +331,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                 tracing::error!("Receive error: {}", e);
                                 last_error = Some(Error::service_call_failed(
                                     self.service_name.clone(),
-                                    format!("No response: {}", e)
+                                    format!("No response: {}", e),
                                 ));
                             }
                         }
@@ -360,7 +362,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                 Some(e) => Err(e),
                 None => Err(Error::service_call_failed(
                     self.service_name.clone(),
-                    "Service call failed after retries"
+                    "Service call failed after retries",
                 )),
             }
         })
@@ -372,8 +374,8 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
 
         Box::pin(async move {
             let service_name_clone = service_name.clone();
-            let key_expr =
-                KeyExpr::try_from(service_name.clone()).map_err(|e| Error::client(service_name_clone, e.to_string()))?;
+            let key_expr = KeyExpr::try_from(service_name.clone())
+                .map_err(|e| Error::client(service_name_clone, e.to_string()))?;
 
             let bytes = encode_message(request);
             let selector = key_expr.clone();
@@ -418,7 +420,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                     tracing::error!("Sample error: {}", e);
                                     last_error = Some(Error::service_call_failed(
                                         service_name.clone(),
-                                        format!("Error in response: {}", e)
+                                        format!("Error in response: {}", e),
                                     ));
                                 }
                             },
@@ -426,7 +428,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                 tracing::error!("Receive error: {}", e);
                                 last_error = Some(Error::service_call_failed(
                                     service_name.clone(),
-                                    format!("No response: {}", e)
+                                    format!("No response: {}", e),
                                 ));
                             }
                         }
@@ -457,7 +459,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                 Some(e) => Err(e),
                 None => Err(Error::service_call_failed(
                     service_name.clone(),
-                    "Service call failed after retries"
+                    "Service call failed after retries",
                 )),
             }
         })
@@ -467,9 +469,15 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
 // Implement the Transport trait for ZenohTransport
 #[async_trait]
 impl Transport for ZenohTransport {
-    async fn create_publisher<M: Message>(&self, topic: &str) -> Result<Arc<crate::publisher::Publisher<M>>> {
+    async fn create_publisher<M: Message>(
+        &self,
+        topic: &str,
+    ) -> Result<Arc<crate::publisher::Publisher<M>>> {
         let zenoh_publisher = ZenohPublisher::new(self.session.clone(), topic.to_string()).await?;
-        Ok(Arc::new(crate::publisher::Publisher::new(topic.to_string(), Box::new(zenoh_publisher))))
+        Ok(Arc::new(crate::publisher::Publisher::new(
+            topic.to_string(),
+            Box::new(zenoh_publisher),
+        )))
     }
 
     async fn create_subscriber<M: Message, F>(
@@ -481,7 +489,10 @@ impl Transport for ZenohTransport {
         F: Fn(M) + Send + Sync + 'static,
     {
         let zenoh_subscriber = ZenohSubscriber::new(self.session.clone(), topic, callback).await?;
-        Ok(Arc::new(crate::subscriber::Subscriber::new(topic.to_string(), Box::new(zenoh_subscriber))))
+        Ok(Arc::new(crate::subscriber::Subscriber::new(
+            topic.to_string(),
+            Box::new(zenoh_subscriber),
+        )))
     }
 
     async fn create_service<Req: Message, Res: Message, F>(
@@ -493,7 +504,10 @@ impl Transport for ZenohTransport {
         F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
     {
         let zenoh_service = ZenohService::new(self.session.clone(), service_name, handler).await?;
-        Ok(Arc::new(crate::service::Service::new(service_name.to_string(), Box::new(zenoh_service))))
+        Ok(Arc::new(crate::service::Service::new(
+            service_name.to_string(),
+            Box::new(zenoh_service),
+        )))
     }
 
     fn create_client<Req: Message, Res: Message>(
@@ -501,6 +515,9 @@ impl Transport for ZenohTransport {
         service_name: &str,
     ) -> Result<Arc<crate::client::Client<Req, Res>>> {
         let zenoh_client = ZenohClient::new(self.session.clone(), service_name);
-        Ok(Arc::new(crate::client::Client::new(service_name.to_string(), Box::new(zenoh_client))))
+        Ok(Arc::new(crate::client::Client::new(
+            service_name.to_string(),
+            Box::new(zenoh_client),
+        )))
     }
 }

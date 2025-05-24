@@ -1,15 +1,15 @@
 //! Node abstraction for Zenobuf
 
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use std::marker::PhantomData;
+use std::sync::{Arc, Mutex};
 
 use crate::client::Client;
 use crate::error::{Error, Result};
 use crate::message::Message;
 use crate::parameter::Parameter;
 use crate::publisher::Publisher;
-use crate::qos::{QosProfile, QosPreset};
+use crate::qos::{QosPreset, QosProfile};
 use crate::service::Service;
 use crate::subscriber::Subscriber;
 use crate::transport::ZenohTransport;
@@ -285,7 +285,10 @@ impl Node {
         {
             let services = self.services.lock().unwrap();
             if services.contains_key(&full_service_name) {
-                return Err(Error::service_already_exists(&full_service_name, &self.name));
+                return Err(Error::service_already_exists(
+                    &full_service_name,
+                    &self.name,
+                ));
             }
         } // MutexGuard is dropped here
 
@@ -317,7 +320,10 @@ impl Node {
         // Check if the client already exists
         let mut clients = self.clients.lock().unwrap();
         if clients.contains_key(&full_service_name) {
-            return Err(Error::service_already_exists(&full_service_name, &self.name));
+            return Err(Error::service_already_exists(
+                &full_service_name,
+                &self.name,
+            ));
         }
 
         // Create the client
@@ -527,7 +533,8 @@ impl<'a, M: Message> SubscriberBuilder<'a, M> {
     where
         F: Fn(M) + Send + Sync + 'static,
     {
-        let subscriber = self.node
+        let subscriber = self
+            .node
             .create_subscriber(&self.topic, self.qos, callback)
             .await?;
         Ok(SubscriberHandle::new(subscriber))

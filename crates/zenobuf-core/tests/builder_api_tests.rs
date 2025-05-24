@@ -1,10 +1,10 @@
 //! Tests for the new builder pattern API
 
-use std::sync::{Arc, Mutex};
 use prost::Message as ProstMessage;
-use zenobuf_core::{Node, QosPreset, QosProfile};
-use zenobuf_core::transport::ZenohTransport;
+use std::sync::{Arc, Mutex};
 use zenobuf_core::message::Message;
+use zenobuf_core::transport::ZenohTransport;
+use zenobuf_core::{Node, QosPreset, QosProfile};
 
 // Test message type
 #[derive(Clone, PartialEq, Debug, Default)]
@@ -15,7 +15,10 @@ struct TestMessage {
 
 // Implement ProstMessage for TestMessage
 impl ProstMessage for TestMessage {
-    fn encode(&self, buf: &mut impl prost::bytes::BufMut) -> std::result::Result<(), prost::EncodeError> {
+    fn encode(
+        &self,
+        buf: &mut impl prost::bytes::BufMut,
+    ) -> std::result::Result<(), prost::EncodeError> {
         // Simple encoding for testing
         buf.put_slice(&self.value.to_le_bytes());
         buf.put_slice(&(self.text.len() as u32).to_le_bytes());
@@ -88,7 +91,10 @@ struct AddRequest {
 
 // Implement ProstMessage for AddRequest
 impl ProstMessage for AddRequest {
-    fn encode(&self, buf: &mut impl prost::bytes::BufMut) -> std::result::Result<(), prost::EncodeError> {
+    fn encode(
+        &self,
+        buf: &mut impl prost::bytes::BufMut,
+    ) -> std::result::Result<(), prost::EncodeError> {
         buf.put_slice(&self.a.to_le_bytes());
         buf.put_slice(&self.b.to_le_bytes());
         Ok(())
@@ -150,7 +156,10 @@ struct AddResponse {
 
 // Implement ProstMessage for AddResponse
 impl ProstMessage for AddResponse {
-    fn encode(&self, buf: &mut impl prost::bytes::BufMut) -> std::result::Result<(), prost::EncodeError> {
+    fn encode(
+        &self,
+        buf: &mut impl prost::bytes::BufMut,
+    ) -> std::result::Result<(), prost::EncodeError> {
         buf.put_slice(&self.sum.to_le_bytes());
         Ok(())
     }
@@ -276,9 +285,7 @@ async fn test_service_builder_api() {
     // Test basic service builder
     let _service = node
         .service::<AddRequest, AddResponse>("add_service")
-        .build(|req: AddRequest| {
-            Ok(AddResponse { sum: req.a + req.b })
-        })
+        .build(|req: AddRequest| Ok(AddResponse { sum: req.a + req.b }))
         .await
         .unwrap();
 }

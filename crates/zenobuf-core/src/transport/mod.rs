@@ -20,7 +20,10 @@ pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 #[async_trait::async_trait]
 pub trait Transport: Send + Sync + 'static {
     /// Create a publisher for the given topic
-    async fn create_publisher<M: Message>(&self, topic: &str) -> Result<Arc<crate::publisher::Publisher<M>>>;
+    async fn create_publisher<M: Message>(
+        &self,
+        topic: &str,
+    ) -> Result<Arc<crate::publisher::Publisher<M>>>;
 
     /// Create a subscriber for the given topic with a callback
     async fn create_subscriber<M: Message, F>(
