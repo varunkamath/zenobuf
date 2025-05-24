@@ -11,10 +11,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create a node
     let node = Node::new("listener").await?;
 
-    // Create a subscriber
-    // Now that topics are global, we can use the same topic name as the talker
+    // Create a subscriber using the builder pattern
     let _subscriber = node
-        .create_subscriber::<Pose, _>("pose", QosProfile::default(), |pose| {
+        .subscriber::<Pose>("pose")
+        .with_qos(QosProfile::default())
+        .build(|pose| {
             println!("Received pose:");
             if let Some(position) = &pose.position {
                 println!(

@@ -11,9 +11,10 @@ async fn main() -> Result<()> {
     // Create a node
     let node = Node::new("add_two_ints_server").await?;
 
-    // Create a service
+    // Create a service using the builder pattern
     let _service = node
-        .create_service::<AddTwoIntsRequest, AddTwoIntsResponse, _>("add_two_ints", |request| {
+        .service::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")
+        .build(|request| {
             println!("Received request: {} + {}", request.a, request.b);
 
             let response = AddTwoIntsResponse {

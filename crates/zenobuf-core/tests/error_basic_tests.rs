@@ -2,87 +2,104 @@ use zenobuf_core::error::Error;
 
 #[test]
 fn test_error_display() {
-    // Test serialization error
+    // Test serialization error (legacy)
     let error = Error::Serialization("failed to serialize".to_string());
     assert!(format!("{}", error).contains("Serialization error"));
     assert!(format!("{}", error).contains("failed to serialize"));
 
-    // Test node already exists error
-    let error = Error::NodeAlreadyExists("test_node".to_string());
-    assert!(format!("{}", error).contains("Node already exists"));
-    assert!(format!("{}", error).contains("test_node"));
+    // Test new structured error constructors
+    let error = Error::node_already_exists("test_node");
+    assert_eq!(error.to_string(), "Node 'test_node' already exists");
 
-    // Test topic already exists error
-    let error = Error::TopicAlreadyExists("test_topic".to_string());
-    assert!(format!("{}", error).contains("Topic already exists"));
-    assert!(format!("{}", error).contains("test_topic"));
+    let error = Error::topic_already_exists("test_topic", "test_node");
+    assert_eq!(
+        error.to_string(),
+        "Topic 'test_topic' already exists on node 'test_node'"
+    );
 
-    // Test service already exists error
-    let error = Error::ServiceAlreadyExists("test_service".to_string());
-    assert!(format!("{}", error).contains("Service already exists"));
-    assert!(format!("{}", error).contains("test_service"));
+    let error = Error::service_already_exists("test_service", "test_node");
+    assert_eq!(
+        error.to_string(),
+        "Service 'test_service' already exists on node 'test_node'"
+    );
 
-    // Test service call timeout error
-    let error = Error::ServiceCallTimeout("test_service".to_string());
-    assert!(format!("{}", error).contains("Service call timed out"));
-    assert!(format!("{}", error).contains("test_service"));
+    let error = Error::service_call_timeout("test_service", 5000);
+    assert_eq!(
+        error.to_string(),
+        "Service call to 'test_service' timed out after 5000ms"
+    );
 
-    // Test service call failed error
-    let error = Error::ServiceCallFailed("test_service".to_string());
-    assert!(format!("{}", error).contains("Service call failed"));
-    assert!(format!("{}", error).contains("test_service"));
+    let error = Error::service_call_failed("test_service", "connection failed");
+    assert_eq!(
+        error.to_string(),
+        "Service call to 'test_service' failed: connection failed"
+    );
 
-    // Test parameter error
-    let error = Error::Parameter("failed to set parameter".to_string());
-    assert!(format!("{}", error).contains("Parameter error"));
-    assert!(format!("{}", error).contains("failed to set parameter"));
+    let error = Error::parameter("test_param", "failed to set parameter");
+    assert_eq!(
+        error.to_string(),
+        "Parameter 'test_param' error: failed to set parameter"
+    );
 
-    // Test node error
-    let error = Error::Node("failed to create node".to_string());
-    assert!(format!("{}", error).contains("Node error"));
-    assert!(format!("{}", error).contains("failed to create node"));
+    let error = Error::node("test_node", "failed to create node");
+    assert_eq!(
+        error.to_string(),
+        "Node 'test_node' error: failed to create node"
+    );
 
-    // Test publisher error
-    let error = Error::Publisher("failed to create publisher".to_string());
-    assert!(format!("{}", error).contains("Publisher error"));
-    assert!(format!("{}", error).contains("failed to create publisher"));
+    let error = Error::publisher("test_topic", "failed to create publisher");
+    assert_eq!(
+        error.to_string(),
+        "Publisher for topic 'test_topic' error: failed to create publisher"
+    );
 
-    // Test subscriber error
-    let error = Error::Subscriber("failed to create subscriber".to_string());
-    assert!(format!("{}", error).contains("Subscriber error"));
-    assert!(format!("{}", error).contains("failed to create subscriber"));
+    let error = Error::subscriber("test_topic", "failed to create subscriber");
+    assert_eq!(
+        error.to_string(),
+        "Subscriber for topic 'test_topic' error: failed to create subscriber"
+    );
 
-    // Test service error
-    let error = Error::Service("failed to create service".to_string());
-    assert!(format!("{}", error).contains("Service error"));
-    assert!(format!("{}", error).contains("failed to create service"));
+    let error = Error::service("test_service", "failed to create service");
+    assert_eq!(
+        error.to_string(),
+        "Service 'test_service' error: failed to create service"
+    );
 
-    // Test client error
-    let error = Error::Client("failed to create client".to_string());
-    assert!(format!("{}", error).contains("Client error"));
-    assert!(format!("{}", error).contains("failed to create client"));
+    let error = Error::client("test_service", "failed to create client");
+    assert_eq!(
+        error.to_string(),
+        "Client for service 'test_service' error: failed to create client"
+    );
 
-    // Test not supported error
-    let error = Error::NotSupported("operation not supported".to_string());
-    assert!(format!("{}", error).contains("Operation not supported"));
-    assert!(format!("{}", error).contains("operation not supported"));
+    let error = Error::configuration("invalid configuration");
+    assert_eq!(
+        error.to_string(),
+        "Configuration error: invalid configuration"
+    );
 
-    // Test not implemented error
-    let error = Error::NotImplemented("operation not implemented".to_string());
-    assert!(format!("{}", error).contains("Operation not implemented"));
-    assert!(format!("{}", error).contains("operation not implemented"));
+    let error = Error::network("connection timeout");
+    assert_eq!(error.to_string(), "Network error: connection timeout");
 
-    // Test other error
-    let error = Error::Other("other error".to_string());
-    assert!(format!("{}", error).contains("Other error"));
-    assert!(format!("{}", error).contains("other error"));
+    let error = Error::other("other error");
+    assert_eq!(error.to_string(), "Error: other error");
 }
 
 #[test]
 fn test_error_debug() {
     // Test Debug implementation
-    let error = Error::Other("other error".to_string());
+    let error = Error::other("other error");
     let debug_str = format!("{:?}", error);
     assert!(debug_str.contains("Other"));
     assert!(debug_str.contains("other error"));
+}
+
+#[test]
+fn test_error_context() {
+    // Test error context helpers
+    use zenobuf_core::error::ErrorContext;
+
+    let result: Result<(), Error> = Err(Error::other("base error"));
+    let with_context = result.with_context("additional context");
+
+    assert!(with_context.is_err());
 }

@@ -2,6 +2,29 @@
 
 use std::time::Duration;
 
+/// QoS preset for common use cases
+///
+/// This enum provides convenient presets for common QoS configurations,
+/// making it easier to configure quality of service without verbose setup.
+#[derive(Debug, Clone, Default)]
+pub enum QosPreset {
+    /// Default QoS profile - reliable, volatile, keep last 10
+    #[default]
+    Default,
+    /// Optimized for sensor data - best effort, volatile, keep last 5
+    SensorData,
+    /// Optimized for parameters - reliable, transient local, keep last 1
+    Parameters,
+    /// Optimized for services - reliable, volatile, keep last 10, 1s deadline
+    Services,
+    /// High throughput - best effort, volatile, keep last 100
+    HighThroughput,
+    /// Low latency - best effort, volatile, keep last 1
+    LowLatency,
+    /// Custom QoS profile
+    Custom(QosProfile),
+}
+
 /// Quality of Service profile for publishers and subscribers
 ///
 /// This struct defines the quality of service parameters for publishers and
@@ -148,4 +171,32 @@ pub enum History {
     KeepLast,
     /// Keep all messages
     KeepAll,
+}
+
+impl From<QosPreset> for QosProfile {
+    fn from(preset: QosPreset) -> Self {
+        match preset {
+            QosPreset::Default => QosProfile::default(),
+            QosPreset::SensorData => QosProfile::sensor_data(),
+            QosPreset::Parameters => QosProfile::parameters(),
+            QosPreset::Services => QosProfile::services(),
+            QosPreset::HighThroughput => QosProfile {
+                reliability: Reliability::BestEffort,
+                durability: Durability::Volatile,
+                history: History::KeepLast,
+                depth: 100,
+                deadline: None,
+                lifespan: None,
+            },
+            QosPreset::LowLatency => QosProfile {
+                reliability: Reliability::BestEffort,
+                durability: Durability::Volatile,
+                history: History::KeepLast,
+                depth: 1,
+                deadline: None,
+                lifespan: None,
+            },
+            QosPreset::Custom(profile) => profile,
+        }
+    }
 }

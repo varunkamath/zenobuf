@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package my_app;
+
+// Example message - replace with your own
+message Point {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+// Example service messages - replace with your own
+message AddRequest {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message AddResponse {
+  int32 sum = 1;
+}

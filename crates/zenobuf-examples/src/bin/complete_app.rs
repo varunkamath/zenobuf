@@ -14,14 +14,18 @@ async fn main() -> Result<()> {
     // Create a node
     let node = Node::new("complete_app").await?;
 
-    // Create a publisher
+    // Create a publisher using the builder pattern
     let publisher = node
-        .create_publisher::<Pose>("pose", QosProfile::default())
+        .publisher::<Pose>("pose")
+        .with_qos(QosProfile::default())
+        .build()
         .await?;
 
-    // Create a subscriber
+    // Create a subscriber using the builder pattern
     let _subscriber = node
-        .create_subscriber::<Pose, _>("pose", QosProfile::default(), |pose| {
+        .subscriber::<Pose>("pose")
+        .with_qos(QosProfile::default())
+        .build(|pose| {
             println!("Received pose:");
             if let Some(position) = &pose.position {
                 println!(
@@ -38,9 +42,10 @@ async fn main() -> Result<()> {
         })
         .await?;
 
-    // Create a service
+    // Create a service using the builder pattern
     let _service = node
-        .create_service::<AddTwoIntsRequest, AddTwoIntsResponse, _>("add_two_ints", |request| {
+        .service::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")
+        .build(|request| {
             println!("Received request: {} + {}", request.a, request.b);
 
             let response = AddTwoIntsResponse {
@@ -55,8 +60,10 @@ async fn main() -> Result<()> {
     // Sleep to ensure the service is registered
     tokio::time::sleep(Duration::from_secs(1)).await;
 
-    // Create a client
-    let client = node.create_client::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")?;
+    // Create a client using the builder pattern
+    let client = node
+        .client::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")
+        .build()?;
 
     // Set parameters
     node.set_parameter("string_param", "hello".to_string())?;

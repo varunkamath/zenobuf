@@ -23,8 +23,10 @@ async fn main() -> Result<()> {
     // Create a node
     let node = Node::new("add_two_ints_client").await?;
 
-    // Create a client
-    let client = node.create_client::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")?;
+    // Create a client using the builder pattern
+    let client = node
+        .client::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")
+        .build()?;
 
     // Create a request
     let request = AddTwoIntsRequest { a, b };
