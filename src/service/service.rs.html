@@ -11,24 +11,25 @@
 <a href=#11 id=11 data-nosnippet>11</a>    <span class="comment">// Create a node
 <a href=#12 id=12 data-nosnippet>12</a>    </span><span class="kw">let </span>node = Node::new(<span class="string">"add_two_ints_server"</span>).<span class="kw">await</span><span class="question-mark">?</span>;
 <a href=#13 id=13 data-nosnippet>13</a>
-<a href=#14 id=14 data-nosnippet>14</a>    <span class="comment">// Create a service
+<a href=#14 id=14 data-nosnippet>14</a>    <span class="comment">// Create a service using the builder pattern
 <a href=#15 id=15 data-nosnippet>15</a>    </span><span class="kw">let </span>_service = node
-<a href=#16 id=16 data-nosnippet>16</a>        .create_service::&lt;AddTwoIntsRequest, AddTwoIntsResponse, <span class="kw">_</span>&gt;(<span class="string">"add_two_ints"</span>, |request| {
-<a href=#17 id=17 data-nosnippet>17</a>            <span class="macro">println!</span>(<span class="string">"Received request: {} + {}"</span>, request.a, request.b);
-<a href=#18 id=18 data-nosnippet>18</a>
-<a href=#19 id=19 data-nosnippet>19</a>            <span class="kw">let </span>response = AddTwoIntsResponse {
-<a href=#20 id=20 data-nosnippet>20</a>                sum: request.a + request.b,
-<a href=#21 id=21 data-nosnippet>21</a>            };
-<a href=#22 id=22 data-nosnippet>22</a>
-<a href=#23 id=23 data-nosnippet>23</a>            <span class="macro">println!</span>(<span class="string">"Sending response: {}"</span>, response.sum);
-<a href=#24 id=24 data-nosnippet>24</a>            <span class="prelude-val">Ok</span>(response)
-<a href=#25 id=25 data-nosnippet>25</a>        })
-<a href=#26 id=26 data-nosnippet>26</a>        .<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#27 id=27 data-nosnippet>27</a>
-<a href=#28 id=28 data-nosnippet>28</a>    <span class="macro">println!</span>(<span class="string">"Service ready"</span>);
-<a href=#29 id=29 data-nosnippet>29</a>
-<a href=#30 id=30 data-nosnippet>30</a>    <span class="comment">// Spin the node
-<a href=#31 id=31 data-nosnippet>31</a>    </span>node.spin().<span class="kw">await</span><span class="question-mark">?</span>;
-<a href=#32 id=32 data-nosnippet>32</a>
-<a href=#33 id=33 data-nosnippet>33</a>    <span class="prelude-val">Ok</span>(())
-<a href=#34 id=34 data-nosnippet>34</a>}</code></pre></div></section></main></body></html>
+<a href=#16 id=16 data-nosnippet>16</a>        .service::&lt;AddTwoIntsRequest, AddTwoIntsResponse&gt;(<span class="string">"add_two_ints"</span>)
+<a href=#17 id=17 data-nosnippet>17</a>        .build(|request| {
+<a href=#18 id=18 data-nosnippet>18</a>            <span class="macro">println!</span>(<span class="string">"Received request: {} + {}"</span>, request.a, request.b);
+<a href=#19 id=19 data-nosnippet>19</a>
+<a href=#20 id=20 data-nosnippet>20</a>            <span class="kw">let </span>response = AddTwoIntsResponse {
+<a href=#21 id=21 data-nosnippet>21</a>                sum: request.a + request.b,
+<a href=#22 id=22 data-nosnippet>22</a>            };
+<a href=#23 id=23 data-nosnippet>23</a>
+<a href=#24 id=24 data-nosnippet>24</a>            <span class="macro">println!</span>(<span class="string">"Sending response: {}"</span>, response.sum);
+<a href=#25 id=25 data-nosnippet>25</a>            <span class="prelude-val">Ok</span>(response)
+<a href=#26 id=26 data-nosnippet>26</a>        })
+<a href=#27 id=27 data-nosnippet>27</a>        .<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#28 id=28 data-nosnippet>28</a>
+<a href=#29 id=29 data-nosnippet>29</a>    <span class="macro">println!</span>(<span class="string">"Service ready"</span>);
+<a href=#30 id=30 data-nosnippet>30</a>
+<a href=#31 id=31 data-nosnippet>31</a>    <span class="comment">// Spin the node
+<a href=#32 id=32 data-nosnippet>32</a>    </span>node.spin().<span class="kw">await</span><span class="question-mark">?</span>;
+<a href=#33 id=33 data-nosnippet>33</a>
+<a href=#34 id=34 data-nosnippet>34</a>    <span class="prelude-val">Ok</span>(())
+<a href=#35 id=35 data-nosnippet>35</a>}</code></pre></div></section></main></body></html>

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["mock"],"struct":["ZenohTransport"],"trait":["Client","Publisher","Service","Subscriber"]};
+window.SIDEBAR_ITEMS = {"struct":["ZenohTransport"],"trait":["Client","Publisher","Service","Subscriber","Transport"],"type":["BoxFuture"]};
