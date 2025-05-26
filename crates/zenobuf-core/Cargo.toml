@@ -3,8 +3,14 @@ name = "zenobuf-core"
 version = "0.2.6"
 edition = "2021"
 authors = ["Zenobuf Team"]
-description = "Core library for the Zenobuf framework"
+description = "A simpler ROS-like framework in Rust with Zenoh transport and Protocol Buffers"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/varunkamath/zenobuf"
+homepage = "https://github.com/varunkamath/zenobuf"
+documentation = "https://docs.rs/zenobuf-core"
+keywords = ["robotics", "ros", "zenoh", "protobuf", "distributed"]
+categories = ["network-programming", "robotics", "asynchronous"]
+readme = "../../README.md"
 
 [dependencies]
 zenoh = "1.3.4"

@@ -3,8 +3,14 @@ name = "zenobuf-cli"
 version = "0.2.6"
 edition = "2021"
 authors = ["Zenobuf Team"]
-description = "Command-line tools for the Zenobuf framework"
+description = "Command-line tools for the Zenobuf framework - monitor topics, call services, manage parameters"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/varunkamath/zenobuf"
+homepage = "https://github.com/varunkamath/zenobuf"
+documentation = "https://docs.rs/zenobuf-cli"
+keywords = ["cli", "robotics", "zenobuf", "monitoring", "tools"]
+categories = ["command-line-utilities", "robotics", "development-tools"]
+readme = "../../README.md"
 
 [dependencies]
 zenobuf-core = { path = "../zenobuf-core", version = "0.2.6" }

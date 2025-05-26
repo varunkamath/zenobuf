@@ -3,8 +3,14 @@ name = "zenobuf-macros"
 version = "0.2.6"
 edition = "2021"
 authors = ["Zenobuf Team"]
-description = "Procedural macros for the Zenobuf framework"
+description = "Procedural macros for the Zenobuf framework - derive macros for Protocol Buffer integration"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/varunkamath/zenobuf"
+homepage = "https://github.com/varunkamath/zenobuf"
+documentation = "https://docs.rs/zenobuf-macros"
+keywords = ["macros", "protobuf", "derive", "zenobuf", "robotics"]
+categories = ["development-tools::procedural-macro-helpers", "robotics"]
+readme = "../../README.md"
 
 [lib]
 proc-macro = true

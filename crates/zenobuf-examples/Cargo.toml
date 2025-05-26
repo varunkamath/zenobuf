@@ -3,8 +3,14 @@ name = "zenobuf-examples"
 version = "0.2.6"
 edition = "2021"
 authors = ["Zenobuf Team"]
-description = "Example applications for the Zenobuf framework"
+description = "Example applications for the Zenobuf framework - publishers, subscribers, services, and clients"
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/varunkamath/zenobuf"
+homepage = "https://github.com/varunkamath/zenobuf"
+documentation = "https://docs.rs/zenobuf-examples"
+keywords = ["examples", "robotics", "zenobuf", "tutorial", "demo"]
+categories = ["robotics", "examples"]
+readme = "../../README.md"
 
 [dependencies]
 zenobuf-core = { path = "../zenobuf-core", version = "0.2.6" }
