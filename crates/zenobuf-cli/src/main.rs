@@ -1,4 +1,98 @@
-//! Command-line tools for the Zenobuf framework
+//! # Zenobuf CLI - Command-line tools for the Zenobuf framework
+//!
+//! The Zenobuf CLI provides essential tools for developing, debugging, and monitoring
+//! Zenobuf applications. It allows you to inspect running systems, monitor message
+//! flows, call services, and manage parameters.
+//!
+//! ## Installation
+//!
+//! ```bash
+//! cargo install zenobuf-cli
+//! ```
+//!
+//! ## Usage
+//!
+//! ### List System Components
+//!
+//! ```bash
+//! # List all active nodes
+//! zenobuf-cli list nodes
+//!
+//! # List all active topics
+//! zenobuf-cli list topics
+//!
+//! # List all available services
+//! zenobuf-cli list services
+//! ```
+//!
+//! ### Monitor Topics
+//!
+//! ```bash
+//! # Monitor messages on a topic
+//! zenobuf-cli monitor sensor_data
+//!
+//! # Monitor with custom timeout
+//! zenobuf-cli monitor sensor_data --timeout 30
+//! ```
+//!
+//! ### Call Services
+//!
+//! ```bash
+//! # Call a service with JSON data
+//! zenobuf-cli call add_service --data '{"a": 5, "b": 3}'
+//!
+//! # Call with custom timeout
+//! zenobuf-cli call status_service --timeout 10
+//! ```
+//!
+//! ### Manage Parameters
+//!
+//! ```bash
+//! # Get a parameter value
+//! zenobuf-cli param get max_speed
+//!
+//! # Set a parameter value
+//! zenobuf-cli param set max_speed 15.0
+//!
+//! # List all parameters
+//! zenobuf-cli param list
+//! ```
+//!
+//! ## Examples
+//!
+//! ### Development Workflow
+//!
+//! ```bash
+//! # 1. Check what's running
+//! zenobuf-cli list nodes
+//! zenobuf-cli list topics
+//!
+//! # 2. Monitor your application's messages
+//! zenobuf-cli monitor /robot/sensors/camera &
+//! zenobuf-cli monitor /robot/control/velocity &
+//!
+//! # 3. Test services manually
+//! zenobuf-cli call /robot/navigation/goto --data '{"x": 1.0, "y": 2.0}'
+//!
+//! # 4. Adjust parameters on the fly
+//! zenobuf-cli param set /robot/max_speed 2.0
+//! ```
+//!
+//! ### Debugging
+//!
+//! ```bash
+//! # Check if your publisher is working
+//! zenobuf-cli list topics | grep my_topic
+//! zenobuf-cli monitor my_topic
+//!
+//! # Verify service availability
+//! zenobuf-cli list services | grep my_service
+//! zenobuf-cli call my_service --data '{}'
+//!
+//! # Check parameter values
+//! zenobuf-cli param list | grep config
+//! zenobuf-cli param get /app/config/debug_mode
+//! ```
 
 use clap::{Parser, Subcommand};
 

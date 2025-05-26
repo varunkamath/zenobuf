@@ -208,16 +208,47 @@ let value: i32 = node.get_parameter("my_param")?;
 println!("Parameter value: {}", value);
 ```
 
-## Examples
+## 📚 Documentation
 
-See the `zenobuf-examples` directory for complete examples:
+### Quick Links
+- **[📖 Getting Started Guide](docs/getting-started.md)** - Complete tutorial from installation to your first app
+- **[🔧 API Reference](docs/api-guide.md)** - Comprehensive API documentation with examples
+- **[🏗️ Architecture Guide](docs/architecture.md)** - System design and internal architecture
+- **[📦 Crate Documentation](https://docs.rs/zenobuf-core)** - API docs on docs.rs
 
-- `talker.rs`: Simple publisher example
-- `listener.rs`: Simple subscriber example
-- `service.rs`: Service example
-- `client.rs`: Client example
-- `parameters.rs`: Parameter example
-- `complete_app.rs`: Complete application example
+### Examples
+
+See the [`zenobuf-examples`](crates/zenobuf-examples/) crate for complete examples:
+
+- **[talker.rs](crates/zenobuf-examples/src/bin/talker.rs)** - Publisher example
+- **[listener.rs](crates/zenobuf-examples/src/bin/listener.rs)** - Subscriber example
+- **[service.rs](crates/zenobuf-examples/src/bin/service.rs)** - Service example
+- **[client.rs](crates/zenobuf-examples/src/bin/client.rs)** - Client example
+- **[parameters.rs](crates/zenobuf-examples/src/bin/parameters.rs)** - Parameter example
+- **[complete_app.rs](crates/zenobuf-examples/src/bin/complete_app.rs)** - Complete application
+
+### CLI Tools
+
+Install the CLI tools for development and debugging:
+
+```bash
+cargo install zenobuf-cli
+
+# Monitor topics
+zenobuf-cli monitor sensor_data
+
+# List system components
+zenobuf-cli list topics
+zenobuf-cli list services
+zenobuf-cli list nodes
+
+# Call services
+zenobuf-cli call add_service --data '{"a": 5, "b": 3}'
+
+# Manage parameters
+zenobuf-cli param get max_speed
+zenobuf-cli param set max_speed 15.0
+```
 
 ## License
 
