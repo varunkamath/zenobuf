@@ -1,2 +1,110 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Example applications for the Zenobuf framework"><title>zenobuf_examples - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-916cea96.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="zenobuf_examples" data-themes="" data-resource-suffix="" data-rustdoc-version="1.87.0 (17067e9ac 2025-05-09)" data-channel="1.87.0" data-search-js="search-e7298875.js" data-settings-js="settings-d72f25bb.js" ><script src="../static.files/storage-82c7156e.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-fb8c74a8.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../zenobuf_examples/index.html">zenobuf_<wbr>examples</a><span class="version">0.2.5</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>zenobuf_examples</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/zenobuf_examples/lib.rs.html#1-12">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Example applications for the Zenobuf framework</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Zenobuf Examples - Example applications for the Zenobuf framework"><title>zenobuf_examples - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-916cea96.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="zenobuf_examples" data-themes="" data-resource-suffix="" data-rustdoc-version="1.87.0 (17067e9ac 2025-05-09)" data-channel="1.87.0" data-search-js="search-e7298875.js" data-settings-js="settings-d72f25bb.js" ><script src="../static.files/storage-82c7156e.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-fb8c74a8.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../zenobuf_examples/index.html">zenobuf_<wbr>examples</a><span class="version">0.2.4</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#zenobuf-examples---example-applications-for-the-zenobuf-framework" title="Zenobuf Examples - Example applications for the Zenobuf framework">Zenobuf Examples - Example applications for the Zenobuf framework</a><ul><li><a href="#available-examples" title="Available Examples">Available Examples</a></li><li><a href="#running-the-examples" title="Running the Examples">Running the Examples</a></li><li><a href="#message-types" title="Message Types">Message Types</a></li><li><a href="#key-concepts-demonstrated" title="Key Concepts Demonstrated">Key Concepts Demonstrated</a></li><li><a href="#learning-path" title="Learning Path">Learning Path</a></li><li><a href="#tips-for-development" title="Tips for Development">Tips for Development</a></li><li><a href="#next-steps" title="Next Steps">Next Steps</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>zenobuf_examples</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/zenobuf_examples/lib.rs.html#1-197">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="zenobuf-examples---example-applications-for-the-zenobuf-framework"><a class="doc-anchor" href="#zenobuf-examples---example-applications-for-the-zenobuf-framework">§</a>Zenobuf Examples - Example applications for the Zenobuf framework</h2>
+<p>This crate contains comprehensive examples demonstrating how to use the Zenobuf
+framework for building distributed systems. Each example showcases different
+aspects of the framework and provides practical, runnable code.</p>
+<h3 id="available-examples"><a class="doc-anchor" href="#available-examples">§</a>Available Examples</h3><h4 id="basic-communication"><a class="doc-anchor" href="#basic-communication">§</a>Basic Communication</h4>
+<ul>
+<li><strong><a href="src/bin/talker.rs">talker.rs</a></strong> - Publisher example that sends geometry messages</li>
+<li><strong><a href="src/bin/listener.rs">listener.rs</a></strong> - Subscriber example that receives geometry messages</li>
+</ul>
+<h4 id="service-communication"><a class="doc-anchor" href="#service-communication">§</a>Service Communication</h4>
+<ul>
+<li><strong><a href="src/bin/service.rs">service.rs</a></strong> - Service example that provides addition functionality</li>
+<li><strong><a href="src/bin/client.rs">client.rs</a></strong> - Client example that calls the addition service</li>
+</ul>
+<h4 id="advanced-examples"><a class="doc-anchor" href="#advanced-examples">§</a>Advanced Examples</h4>
+<ul>
+<li><strong><a href="src/bin/complete_app.rs">complete_app.rs</a></strong> - Complete application with pub/sub, services, and parameters</li>
+<li><strong><a href="src/bin/parameters.rs">parameters.rs</a></strong> - Parameter system usage example</li>
+</ul>
+<h3 id="running-the-examples"><a class="doc-anchor" href="#running-the-examples">§</a>Running the Examples</h3><h4 id="publishersubscriber-example"><a class="doc-anchor" href="#publishersubscriber-example">§</a>Publisher/Subscriber Example</h4><div class="example-wrap"><pre class="language-bash"><code># Terminal 1: Start the listener
+cargo run --bin listener
+
+# Terminal 2: Start the talker
+cargo run --bin talker</code></pre></div><h4 id="serviceclient-example"><a class="doc-anchor" href="#serviceclient-example">§</a>Service/Client Example</h4><div class="example-wrap"><pre class="language-bash"><code># Terminal 1: Start the service
+cargo run --bin service
+
+# Terminal 2: Call the service
+cargo run --bin client 5 3</code></pre></div><h4 id="complete-application"><a class="doc-anchor" href="#complete-application">§</a>Complete Application</h4><div class="example-wrap"><pre class="language-bash"><code># Run the complete example (includes everything)
+cargo run --bin complete_app</code></pre></div><h4 id="parameter-example"><a class="doc-anchor" href="#parameter-example">§</a>Parameter Example</h4><div class="example-wrap"><pre class="language-bash"><code># Run the parameter example
+cargo run --bin parameters</code></pre></div><h3 id="message-types"><a class="doc-anchor" href="#message-types">§</a>Message Types</h3>
+<p>The examples use Protocol Buffer messages defined in the <code>protos/</code> directory:</p>
+<h4 id="geometry-messages-protosgeometryproto"><a class="doc-anchor" href="#geometry-messages-protosgeometryproto">§</a>Geometry Messages (<code>protos/geometry.proto</code>)</h4>
+<ul>
+<li><strong>Point</strong> - 3D point with x, y, z coordinates</li>
+<li><strong>Quaternion</strong> - Orientation representation</li>
+<li><strong>Pose</strong> - Position and orientation combined</li>
+</ul>
+<h4 id="service-messages-protosexample_serviceproto"><a class="doc-anchor" href="#service-messages-protosexample_serviceproto">§</a>Service Messages (<code>protos/example_service.proto</code>)</h4>
+<ul>
+<li><strong>AddTwoIntsRequest</strong> - Request with two integers to add</li>
+<li><strong>AddTwoIntsResponse</strong> - Response with the sum</li>
+</ul>
+<h3 id="key-concepts-demonstrated"><a class="doc-anchor" href="#key-concepts-demonstrated">§</a>Key Concepts Demonstrated</h3><h4 id="1-node-creation"><a class="doc-anchor" href="#1-node-creation">§</a>1. Node Creation</h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>zenobuf_core::Node;
+
+<span class="attr">#[tokio::main]
+</span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
+    <span class="kw">let </span>node = Node::new(<span class="string">"my_node"</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="comment">// Use the node...
+    </span><span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<h4 id="2-publishing-messages"><a class="doc-anchor" href="#2-publishing-messages">§</a>2. Publishing Messages</h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>publisher = node
+    .publisher::&lt;Point&gt;(<span class="string">"points"</span>)
+    .build()
+    .<span class="kw">await</span><span class="question-mark">?</span>;
+
+<span class="kw">let </span>point = Point { x: <span class="number">1.0</span>, y: <span class="number">2.0</span>, z: <span class="number">3.0 </span>};
+publisher.publish(<span class="kw-2">&amp;</span>point)<span class="question-mark">?</span>;</code></pre></div>
+<h4 id="3-subscribing-to-messages"><a class="doc-anchor" href="#3-subscribing-to-messages">§</a>3. Subscribing to Messages</h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>_subscriber = node
+    .subscriber::&lt;Point&gt;(<span class="string">"points"</span>)
+    .build(|point| {
+        <span class="macro">println!</span>(<span class="string">"Received: ({}, {}, {})"</span>, point.x, point.y, point.z);
+    })
+    .<span class="kw">await</span><span class="question-mark">?</span>;
+
+node.spin().<span class="kw">await</span><span class="question-mark">?</span>;</code></pre></div>
+<h4 id="4-creating-services"><a class="doc-anchor" href="#4-creating-services">§</a>4. Creating Services</h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>_service = node
+    .service::&lt;AddTwoIntsRequest, AddTwoIntsResponse&gt;(<span class="string">"add"</span>)
+    .build(|request| {
+        <span class="prelude-val">Ok</span>(AddTwoIntsResponse {
+            sum: request.a + request.b,
+        })
+    })
+    .<span class="kw">await</span><span class="question-mark">?</span>;
+
+node.spin().<span class="kw">await</span><span class="question-mark">?</span>;</code></pre></div>
+<h4 id="5-calling-services"><a class="doc-anchor" href="#5-calling-services">§</a>5. Calling Services</h4>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>client = node
+    .client::&lt;AddTwoIntsRequest, AddTwoIntsResponse&gt;(<span class="string">"add"</span>)
+    .build()<span class="question-mark">?</span>;
+
+<span class="kw">let </span>request = AddTwoIntsRequest { a: <span class="number">5</span>, b: <span class="number">3 </span>};
+<span class="kw">let </span>response = client.call(<span class="kw-2">&amp;</span>request)<span class="question-mark">?</span>;
+<span class="macro">println!</span>(<span class="string">"Result: {}"</span>, response.sum);</code></pre></div>
+<h3 id="learning-path"><a class="doc-anchor" href="#learning-path">§</a>Learning Path</h3>
+<ol>
+<li><strong>Start with Basic Examples</strong>: Run <code>talker</code> and <code>listener</code> to understand pub/sub</li>
+<li><strong>Try Service Communication</strong>: Run <code>service</code> and <code>client</code> to understand RPC</li>
+<li><strong>Explore Parameters</strong>: Run <code>parameters</code> to see configuration management</li>
+<li><strong>Study Complete Application</strong>: Run <code>complete_app</code> to see everything together</li>
+<li><strong>Build Your Own</strong>: Use these examples as templates for your applications</li>
+</ol>
+<h3 id="tips-for-development"><a class="doc-anchor" href="#tips-for-development">§</a>Tips for Development</h3>
+<ul>
+<li><strong>Use the CLI tools</strong>: <code>zenobuf-cli list topics</code> to see active topics</li>
+<li><strong>Monitor messages</strong>: <code>zenobuf-cli monitor &lt;topic&gt;</code> to debug message flow</li>
+<li><strong>Check services</strong>: <code>zenobuf-cli list services</code> to see available services</li>
+<li><strong>Manage parameters</strong>: <code>zenobuf-cli param get/set</code> for runtime configuration</li>
+</ul>
+<h3 id="next-steps"><a class="doc-anchor" href="#next-steps">§</a>Next Steps</h3>
+<p>After exploring these examples:</p>
+<ul>
+<li>Read the <a href="../../docs/getting-started.md">Getting Started Guide</a></li>
+<li>Check the <a href="../../docs/api-guide.md">API Reference</a></li>
+<li>Use the <a href="../../starter-template/">Starter Template</a> for your own projects</li>
+</ul>
 </div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="proto/index.html" title="mod zenobuf_examples::proto">proto</a></dt></dl></section></div></main></body></html>

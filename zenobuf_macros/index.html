@@ -1,5 +1,66 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Procedural macros for the Zenobuf framework"><title>zenobuf_macros - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-916cea96.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="zenobuf_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.87.0 (17067e9ac 2025-05-09)" data-channel="1.87.0" data-search-js="search-e7298875.js" data-settings-js="settings-d72f25bb.js" ><script src="../static.files/storage-82c7156e.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-fb8c74a8.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../zenobuf_macros/index.html">zenobuf_<wbr>macros</a><span class="version">0.2.5</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#derives">Crate Items</a></h3><ul class="block"><li><a href="#derives" title="Derive Macros">Derive Macros</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>zenobuf_macros</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/zenobuf_macros/lib.rs.html#1-50">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Procedural macros for the Zenobuf framework</p>
-<p>This crate provides procedural macros for the Zenobuf framework,
-including the <code>ZenobufMessage</code> derive macro for implementing the
-<code>Message</code> trait for Protocol Buffer messages.</p>
-</div></details><h2 id="derives" class="section-header">Derive Macros<a href="#derives" class="anchor">§</a></h2><dl class="item-table"><dt><a class="derive" href="derive.ZenobufMessage.html" title="derive zenobuf_macros::ZenobufMessage">Zenobuf<wbr>Message</a></dt><dd>Derives the <code>Message</code> trait for a Protocol Buffer message</dd></dl></section></div></main></body></html>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Zenobuf Macros - Procedural macros for the Zenobuf framework"><title>zenobuf_macros - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-916cea96.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="zenobuf_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.87.0 (17067e9ac 2025-05-09)" data-channel="1.87.0" data-search-js="search-e7298875.js" data-settings-js="settings-d72f25bb.js" ><script src="../static.files/storage-82c7156e.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-fb8c74a8.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../zenobuf_macros/index.html">zenobuf_<wbr>macros</a><span class="version">0.2.4</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#zenobuf-macros---procedural-macros-for-the-zenobuf-framework" title="Zenobuf Macros - Procedural macros for the Zenobuf framework">Zenobuf Macros - Procedural macros for the Zenobuf framework</a><ul><li><a href="#overview" title="Overview">Overview</a></li><li><a href="#quick-start" title="Quick Start">Quick Start</a></li><li><a href="#manual-usage" title="Manual Usage">Manual Usage</a></li><li><a href="#what-the-macro-does" title="What the Macro Does">What the Macro Does</a></li><li><a href="#requirements" title="Requirements">Requirements</a></li></ul></li></ul><h3><a href="#derives">Crate Items</a></h3><ul class="block"><li><a href="#derives" title="Derive Macros">Derive Macros</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>zenobuf_macros</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/zenobuf_macros/lib.rs.html#1-184">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="zenobuf-macros---procedural-macros-for-the-zenobuf-framework"><a class="doc-anchor" href="#zenobuf-macros---procedural-macros-for-the-zenobuf-framework">§</a>Zenobuf Macros - Procedural macros for the Zenobuf framework</h2>
+<p>This crate provides procedural macros that simplify working with the Zenobuf framework,
+particularly for integrating Protocol Buffer messages with the type-safe messaging system.</p>
+<h3 id="overview"><a class="doc-anchor" href="#overview">§</a>Overview</h3>
+<p>The main macro provided is <a href="derive.ZenobufMessage.html" title="derive zenobuf_macros::ZenobufMessage"><code>ZenobufMessage</code></a>, which automatically implements the
+[<code>zenobuf_core::Message</code>] trait for Protocol Buffer messages generated by Prost.</p>
+<h3 id="quick-start"><a class="doc-anchor" href="#quick-start">§</a>Quick Start</h3><h4 id="1-add-to-your-cargotoml"><a class="doc-anchor" href="#1-add-to-your-cargotoml">§</a>1. Add to your <code>Cargo.toml</code></h4><div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+zenobuf-core = &quot;0.2&quot;
+zenobuf-macros = &quot;0.2&quot;
+prost = &quot;0.13&quot;
+
+[build-dependencies]
+prost-build = &quot;0.13&quot;</code></pre></div><h4 id="2-setup-automatic-derive-in-buildrs"><a class="doc-anchor" href="#2-setup-automatic-derive-in-buildrs">§</a>2. Setup automatic derive in <code>build.rs</code></h4>
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>main() -&gt; std::io::Result&lt;()&gt; {
+    prost_build::Config::new()
+        .type_attribute(<span class="string">"."</span>, <span class="string">"#[derive(zenobuf_macros::ZenobufMessage)]"</span>)
+        .compile_protos(<span class="kw-2">&amp;</span>[<span class="string">"protos/messages.proto"</span>], <span class="kw-2">&amp;</span>[<span class="string">"protos"</span>])<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<h4 id="3-use-in-your-code"><a class="doc-anchor" href="#3-use-in-your-code">§</a>3. Use in your code</h4>
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="comment">// Generated protobuf code automatically has ZenobufMessage derived
+</span><span class="kw">pub mod </span>proto {
+    <span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">"OUT_DIR"</span>), <span class="string">"/my_messages.rs"</span>));
+}
+
+<span class="kw">use </span>zenobuf_core::Node;
+
+<span class="attr">#[tokio::main]
+</span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
+    <span class="kw">let </span>node = Node::new(<span class="string">"my_node"</span>).<span class="kw">await</span><span class="question-mark">?</span>;
+
+    <span class="comment">// Your protobuf messages now work seamlessly with Zenobuf
+    </span><span class="kw">let </span>publisher = node
+        .publisher::&lt;proto::MyMessage&gt;(<span class="string">"topic"</span>)
+        .build()
+        .<span class="kw">await</span><span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(())
+}</code></pre></div>
+<h3 id="manual-usage"><a class="doc-anchor" href="#manual-usage">§</a>Manual Usage</h3>
+<p>You can also manually derive the macro on your own types:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>zenobuf_macros::ZenobufMessage;
+
+<span class="attr">#[derive(Clone, PartialEq, Default, ZenobufMessage)]
+</span><span class="kw">pub struct </span>MyMessage {
+    <span class="kw">pub </span>value: i32,
+}</code></pre></div>
+<h3 id="what-the-macro-does"><a class="doc-anchor" href="#what-the-macro-does">§</a>What the Macro Does</h3>
+<p>The <code>ZenobufMessage</code> derive macro implements the [<code>zenobuf_core::Message</code>] trait,
+which provides:</p>
+<ul>
+<li>Type name information for debugging and introspection</li>
+<li>Integration with Zenobuf’s type-safe messaging system</li>
+<li>Automatic serialization/deserialization support</li>
+</ul>
+<h3 id="requirements"><a class="doc-anchor" href="#requirements">§</a>Requirements</h3>
+<p>Types that derive <code>ZenobufMessage</code> must also implement:</p>
+<ul>
+<li><code>Clone</code></li>
+<li><code>PartialEq</code></li>
+<li><code>Default</code></li>
+<li><code>prost::Message</code> (for Protocol Buffer types)</li>
+<li><code>Send + Sync + 'static</code> (automatically satisfied by most types)</li>
+</ul>
+</div></details><h2 id="derives" class="section-header">Derive Macros<a href="#derives" class="anchor">§</a></h2><dl class="item-table"><dt><a class="derive" href="derive.ZenobufMessage.html" title="derive zenobuf_macros::ZenobufMessage">Zenobuf<wbr>Message</a></dt><dd>Derives the [<code>zenobuf_core::Message</code>] trait for Protocol Buffer messages</dd></dl></section></div></main></body></html>
