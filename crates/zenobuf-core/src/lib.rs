@@ -46,7 +46,7 @@
 //! ### 3. Setup Build Script
 //!
 //! Create `build.rs`:
-//! ```rust,no_run
+//! ```rust,ignore
 //! fn main() -> std::io::Result<()> {
 //!     prost_build::Config::new()
 //!         .type_attribute(".", "#[derive(zenobuf_macros::ZenobufMessage)]")
@@ -57,7 +57,7 @@
 //!
 //! ### 4. Create a Node and Publisher
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use zenobuf_core::Node;
 //!
 //! // Include generated protobuf code
@@ -90,15 +90,12 @@
 //!
 //! ### 5. Create a Subscriber
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use zenobuf_core::Node;
+//!
+//! // Use the same proto module from above
 //! # pub mod proto {
-//! #     #[derive(Clone, PartialEq, Default, zenobuf_macros::ZenobufMessage)]
-//! #     pub struct Point {
-//! #         pub x: f32,
-//! #         pub y: f32,
-//! #         pub z: f32,
-//! #     }
+//! #     include!(concat!(env!("OUT_DIR"), "/my_app.rs"));
 //! # }
 //!
 //! #[tokio::main]

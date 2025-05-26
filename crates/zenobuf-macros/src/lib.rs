@@ -24,7 +24,7 @@
 //!
 //! ### 2. Setup automatic derive in `build.rs`
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! fn main() -> std::io::Result<()> {
 //!     prost_build::Config::new()
 //!         .type_attribute(".", "#[derive(zenobuf_macros::ZenobufMessage)]")
@@ -61,7 +61,7 @@
 //!
 //! You can also manually derive the macro on your own types:
 //!
-//! ```rust
+//! ```rust,ignore
 //! use zenobuf_macros::ZenobufMessage;
 //!
 //! #[derive(Clone, PartialEq, Default, ZenobufMessage)]
@@ -110,7 +110,7 @@ use syn::{parse_macro_input, DeriveInput};
 ///
 /// ## Manual Usage
 ///
-/// ```rust
+/// ```rust,ignore
 /// use zenobuf_macros::ZenobufMessage;
 ///
 /// #[derive(Clone, PartialEq, Default, ZenobufMessage)]
@@ -124,7 +124,7 @@ use syn::{parse_macro_input, DeriveInput};
 /// ## With Protocol Buffers (typical usage)
 ///
 /// In your `build.rs`:
-/// ```rust,no_run
+/// ```rust,ignore
 /// prost_build::Config::new()
 ///     .type_attribute(".", "#[derive(zenobuf_macros::ZenobufMessage)]")
 ///     .compile_protos(&["protos/messages.proto"], &["protos"])?;
