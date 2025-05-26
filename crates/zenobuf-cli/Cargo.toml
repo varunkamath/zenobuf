@@ -8,8 +8,6 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/varunkamath/zenobuf"
 homepage = "https://github.com/varunkamath/zenobuf"
 documentation = "https://docs.rs/zenobuf-cli"
-keywords = ["cli", "robotics", "zenobuf", "monitoring", "tools"]
-categories = ["command-line-utilities", "robotics", "development-tools"]
 readme = "../../README.md"
 
 [dependencies]

@@ -8,8 +8,6 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/varunkamath/zenobuf"
 homepage = "https://github.com/varunkamath/zenobuf"
 documentation = "https://docs.rs/zenobuf-examples"
-keywords = ["examples", "robotics", "zenobuf", "tutorial", "demo"]
-categories = ["robotics", "examples"]
 readme = "../../README.md"
 
 [dependencies]

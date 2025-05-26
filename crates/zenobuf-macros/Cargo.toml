@@ -8,8 +8,6 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/varunkamath/zenobuf"
 homepage = "https://github.com/varunkamath/zenobuf"
 documentation = "https://docs.rs/zenobuf-macros"
-keywords = ["macros", "protobuf", "derive", "zenobuf", "robotics"]
-categories = ["development-tools::procedural-macro-helpers", "robotics"]
 readme = "../../README.md"
 
 [lib]
