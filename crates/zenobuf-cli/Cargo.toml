@@ -1,6 +1,6 @@
 [package]
 name = "zenobuf-cli"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["Zenobuf Team"]
 description = "Command-line tools for the Zenobuf framework - monitor topics, call services, manage parameters"
@@ -11,7 +11,7 @@ documentation = "https://docs.rs/zenobuf-cli"
 readme = "../../README.md"
 
 [dependencies]
-zenobuf-core = { path = "../zenobuf-core", version = "0.3.0" }
+zenobuf-core = { path = "../zenobuf-core", version = "0.3.1" }
 zenoh = "1.4.0"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }

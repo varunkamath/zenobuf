@@ -1,6 +1,6 @@
 [package]
 name = "zenobuf-macros"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["Zenobuf Team"]
 description = "Procedural macros for the Zenobuf framework - derive macros for Protocol Buffer integration"
@@ -19,5 +19,5 @@ quote = "1"
 syn = { version = "2", features = ["full"] }
 
 [dev-dependencies]
-zenobuf-core = { path = "../zenobuf-core", version = "0.3.0" }
+zenobuf-core = { path = "../zenobuf-core", version = "0.3.1" }
 prost = "0.13.5"
