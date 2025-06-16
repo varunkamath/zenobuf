@@ -20,4 +20,4 @@ syn = { version = "2", features = ["full"] }
 
 [dev-dependencies]
 zenobuf-core = { path = "../zenobuf-core", version = "0.3.1" }
-prost = "0.13.5"
+prost = "0.14.0"
