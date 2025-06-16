@@ -203,6 +203,8 @@ jobs:
         run: |
           # Update version in all Cargo.toml files
           find crates -name "Cargo.toml" -exec cargo set-version ${{ env.NEW_VERSION }} --manifest-path {} \;
+          # Update version in root Cargo.toml
+          cargo set-version ${{ env.NEW_VERSION }}
       
       - name: Generate Changelog
         run: git-cliff --unreleased --tag v${{ env.NEW_VERSION }} > CHANGELOG.md
