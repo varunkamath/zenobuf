@@ -15,7 +15,7 @@ zenobuf-core = { path = "../zenobuf-core", version = "0.3.1" }
 zenoh = "1.4.0"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
-console = "0.15"
+console = "0.16"
 indicatif = "0.18"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
