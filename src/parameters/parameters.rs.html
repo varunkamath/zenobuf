@@ -26,10 +26,10 @@
 <a href=#26 id=26 data-nosnippet>26</a>
 <a href=#27 id=27 data-nosnippet>27</a>    <span class="comment">// Print parameters
 <a href=#28 id=28 data-nosnippet>28</a>    </span><span class="macro">println!</span>(<span class="string">"Parameters:"</span>);
-<a href=#29 id=29 data-nosnippet>29</a>    <span class="macro">println!</span>(<span class="string">"  string_param: {}"</span>, string_param);
-<a href=#30 id=30 data-nosnippet>30</a>    <span class="macro">println!</span>(<span class="string">"  int_param: {}"</span>, int_param);
-<a href=#31 id=31 data-nosnippet>31</a>    <span class="macro">println!</span>(<span class="string">"  float_param: {}"</span>, float_param);
-<a href=#32 id=32 data-nosnippet>32</a>    <span class="macro">println!</span>(<span class="string">"  bool_param: {}"</span>, bool_param);
+<a href=#29 id=29 data-nosnippet>29</a>    <span class="macro">println!</span>(<span class="string">"  string_param: {string_param}"</span>);
+<a href=#30 id=30 data-nosnippet>30</a>    <span class="macro">println!</span>(<span class="string">"  int_param: {int_param}"</span>);
+<a href=#31 id=31 data-nosnippet>31</a>    <span class="macro">println!</span>(<span class="string">"  float_param: {float_param}"</span>);
+<a href=#32 id=32 data-nosnippet>32</a>    <span class="macro">println!</span>(<span class="string">"  bool_param: {bool_param}"</span>);
 <a href=#33 id=33 data-nosnippet>33</a>
 <a href=#34 id=34 data-nosnippet>34</a>    <span class="comment">// Update a parameter
 <a href=#35 id=35 data-nosnippet>35</a>    </span><span class="macro">println!</span>(<span class="string">"Updating int_param to 100"</span>);
@@ -37,7 +37,7 @@
 <a href=#37 id=37 data-nosnippet>37</a>
 <a href=#38 id=38 data-nosnippet>38</a>    <span class="comment">// Get the updated parameter
 <a href=#39 id=39 data-nosnippet>39</a>    </span><span class="kw">let </span>int_param: i32 = node.get_parameter(<span class="string">"int_param"</span>)<span class="question-mark">?</span>;
-<a href=#40 id=40 data-nosnippet>40</a>    <span class="macro">println!</span>(<span class="string">"  int_param: {}"</span>, int_param);
+<a href=#40 id=40 data-nosnippet>40</a>    <span class="macro">println!</span>(<span class="string">"  int_param: {int_param}"</span>);
 <a href=#41 id=41 data-nosnippet>41</a>
 <a href=#42 id=42 data-nosnippet>42</a>    <span class="comment">// Sleep for a while
 <a href=#43 id=43 data-nosnippet>43</a>    </span>tokio::time::sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;

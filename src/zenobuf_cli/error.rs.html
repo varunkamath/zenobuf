@@ -16,9 +16,9 @@
 <a href=#16 id=16 data-nosnippet>16</a><span class="kw">impl </span>fmt::Display <span class="kw">for </span>Error {
 <a href=#17 id=17 data-nosnippet>17</a>    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
 <a href=#18 id=18 data-nosnippet>18</a>        <span class="kw">match </span><span class="self">self </span>{
-<a href=#19 id=19 data-nosnippet>19</a>            Error::Zenoh(e) =&gt; <span class="macro">write!</span>(f, <span class="string">"Zenoh error: {}"</span>, e),
-<a href=#20 id=20 data-nosnippet>20</a>            Error::Json(e) =&gt; <span class="macro">write!</span>(f, <span class="string">"JSON error: {}"</span>, e),
-<a href=#21 id=21 data-nosnippet>21</a>            Error::Other(e) =&gt; <span class="macro">write!</span>(f, <span class="string">"{}"</span>, e),
+<a href=#19 id=19 data-nosnippet>19</a>            Error::Zenoh(e) =&gt; <span class="macro">write!</span>(f, <span class="string">"Zenoh error: {e}"</span>),
+<a href=#20 id=20 data-nosnippet>20</a>            Error::Json(e) =&gt; <span class="macro">write!</span>(f, <span class="string">"JSON error: {e}"</span>),
+<a href=#21 id=21 data-nosnippet>21</a>            Error::Other(e) =&gt; <span class="macro">write!</span>(f, <span class="string">"{e}"</span>),
 <a href=#22 id=22 data-nosnippet>22</a>        }
 <a href=#23 id=23 data-nosnippet>23</a>    }
 <a href=#24 id=24 data-nosnippet>24</a>}
