@@ -74,7 +74,7 @@ async fn get_param(args: GetArgs) -> Result<()> {
                         Err(_) => {
                             // If not JSON, print as string
                             let payload_str = String::from_utf8_lossy(&payload);
-                            println!("  Value: {}", payload_str);
+                            println!("  Value: {payload_str}");
                         }
                     }
                 }
@@ -149,7 +149,7 @@ async fn list_params() -> Result<()> {
                     Err(_) => {
                         // If not JSON, print as string
                         let payload_str = String::from_utf8_lossy(&payload);
-                        println!("  {}: {}", param_name, payload_str);
+                        println!("  {param_name}: {payload_str}");
                     }
                 }
             }

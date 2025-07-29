@@ -16,9 +16,9 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::Zenoh(e) => write!(f, "Zenoh error: {}", e),
-            Error::Json(e) => write!(f, "JSON error: {}", e),
-            Error::Other(e) => write!(f, "{}", e),
+            Error::Zenoh(e) => write!(f, "Zenoh error: {e}"),
+            Error::Json(e) => write!(f, "JSON error: {e}"),
+            Error::Other(e) => write!(f, "{e}"),
         }
     }
 }

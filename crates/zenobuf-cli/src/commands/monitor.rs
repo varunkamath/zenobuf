@@ -73,18 +73,18 @@ pub async fn execute(args: MonitorArgs) -> Result<()> {
                             // If not JSON, print as string
                             let payload_str = String::from_utf8_lossy(&payload);
                             if args.timestamps {
-                                println!("{} {}", timestamp, payload_str);
+                                println!("{timestamp} {payload_str}");
                             } else {
-                                println!("{}", payload_str);
+                                println!("{payload_str}");
                             }
                         }
                     } else {
                         // Print as string
                         let payload_str = String::from_utf8_lossy(&payload);
                         if args.timestamps {
-                            println!("{} {}", timestamp, payload_str);
+                            println!("{timestamp} {payload_str}");
                         } else {
-                            println!("{}", payload_str);
+                            println!("{payload_str}");
                         }
                     }
                 }

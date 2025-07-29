@@ -29,7 +29,7 @@ pub async fn execute(args: CallArgs) -> Result<()> {
     // Parse the request data
     let request_data = match &args.data {
         Some(data) => {
-            println!("  With data: {}", data);
+            println!("  With data: {data}");
             serde_json::from_str::<Value>(data)?
         }
         None => {
@@ -75,19 +75,19 @@ pub async fn execute(args: CallArgs) -> Result<()> {
                             // If not JSON, print as string
                             let payload_str = String::from_utf8_lossy(&payload);
                             println!("\n{}", style("Response:").bold());
-                            println!("{}", payload_str);
+                            println!("{payload_str}");
                         }
                     }
                 }
                 Err(e) => {
                     println!("\n{}", style("Error:").bold().red());
-                    println!("  {}", e);
+                    println!("  {e}");
                 }
             }
         }
         Err(e) => {
             println!("\n{}", style("Error:").bold().red());
-            println!("  {}", e);
+            println!("  {e}");
         }
     }
 
