@@ -26,7 +26,7 @@ impl Parameter {
         value: T,
     ) -> Result<Self> {
         let serialized = serde_json::to_string(&value)
-            .map_err(|e| Error::parameter(name, format!("Failed to serialize: {}", e)))?;
+            .map_err(|e| Error::parameter(name, format!("Failed to serialize: {e}")))?;
 
         Ok(Self {
             name: name.to_string(),
@@ -52,7 +52,7 @@ impl Parameter {
         // If downcasting fails, try to deserialize from the serialized value
         let serialized = self.serialized.lock().unwrap();
         let deserialized = serde_json::from_str::<T>(&serialized)
-            .map_err(|e| Error::parameter(&self.name, format!("Failed to deserialize: {}", e)))?;
+            .map_err(|e| Error::parameter(&self.name, format!("Failed to deserialize: {e}")))?;
 
         Ok(deserialized)
     }
@@ -63,7 +63,7 @@ impl Parameter {
         value: T,
     ) -> Result<()> {
         let serialized = serde_json::to_string(&value)
-            .map_err(|e| Error::parameter(&self.name, format!("Failed to serialize: {}", e)))?;
+            .map_err(|e| Error::parameter(&self.name, format!("Failed to serialize: {e}")))?;
 
         *self.value.lock().unwrap() = Box::new(value);
         *self.serialized.lock().unwrap() = serialized;
