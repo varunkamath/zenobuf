@@ -26,7 +26,7 @@
 <a href=#26 id=26 data-nosnippet>26</a>        value: T,
 <a href=#27 id=27 data-nosnippet>27</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
 <a href=#28 id=28 data-nosnippet>28</a>        <span class="kw">let </span>serialized = serde_json::to_string(<span class="kw-2">&amp;</span>value)
-<a href=#29 id=29 data-nosnippet>29</a>            .map_err(|e| Error::parameter(name, <span class="macro">format!</span>(<span class="string">"Failed to serialize: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#29 id=29 data-nosnippet>29</a>            .map_err(|e| Error::parameter(name, <span class="macro">format!</span>(<span class="string">"Failed to serialize: {e}"</span>)))<span class="question-mark">?</span>;
 <a href=#30 id=30 data-nosnippet>30</a>
 <a href=#31 id=31 data-nosnippet>31</a>        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
 <a href=#32 id=32 data-nosnippet>32</a>            name: name.to_string(),
@@ -52,7 +52,7 @@
 <a href=#52 id=52 data-nosnippet>52</a>        <span class="comment">// If downcasting fails, try to deserialize from the serialized value
 <a href=#53 id=53 data-nosnippet>53</a>        </span><span class="kw">let </span>serialized = <span class="self">self</span>.serialized.lock().unwrap();
 <a href=#54 id=54 data-nosnippet>54</a>        <span class="kw">let </span>deserialized = serde_json::from_str::&lt;T&gt;(<span class="kw-2">&amp;</span>serialized)
-<a href=#55 id=55 data-nosnippet>55</a>            .map_err(|e| Error::parameter(<span class="kw-2">&amp;</span><span class="self">self</span>.name, <span class="macro">format!</span>(<span class="string">"Failed to deserialize: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#55 id=55 data-nosnippet>55</a>            .map_err(|e| Error::parameter(<span class="kw-2">&amp;</span><span class="self">self</span>.name, <span class="macro">format!</span>(<span class="string">"Failed to deserialize: {e}"</span>)))<span class="question-mark">?</span>;
 <a href=#56 id=56 data-nosnippet>56</a>
 <a href=#57 id=57 data-nosnippet>57</a>        <span class="prelude-val">Ok</span>(deserialized)
 <a href=#58 id=58 data-nosnippet>58</a>    }
@@ -63,7 +63,7 @@
 <a href=#63 id=63 data-nosnippet>63</a>        value: T,
 <a href=#64 id=64 data-nosnippet>64</a>    ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
 <a href=#65 id=65 data-nosnippet>65</a>        <span class="kw">let </span>serialized = serde_json::to_string(<span class="kw-2">&amp;</span>value)
-<a href=#66 id=66 data-nosnippet>66</a>            .map_err(|e| Error::parameter(<span class="kw-2">&amp;</span><span class="self">self</span>.name, <span class="macro">format!</span>(<span class="string">"Failed to serialize: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#66 id=66 data-nosnippet>66</a>            .map_err(|e| Error::parameter(<span class="kw-2">&amp;</span><span class="self">self</span>.name, <span class="macro">format!</span>(<span class="string">"Failed to serialize: {e}"</span>)))<span class="question-mark">?</span>;
 <a href=#67 id=67 data-nosnippet>67</a>
 <a href=#68 id=68 data-nosnippet>68</a>        <span class="kw-2">*</span><span class="self">self</span>.value.lock().unwrap() = Box::new(value);
 <a href=#69 id=69 data-nosnippet>69</a>        <span class="kw-2">*</span><span class="self">self</span>.serialized.lock().unwrap() = serialized;

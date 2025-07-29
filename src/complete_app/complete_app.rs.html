@@ -94,7 +94,7 @@
 <a href=#94 id=94 data-nosnippet>94</a>
 <a href=#95 id=95 data-nosnippet>95</a>        <span class="comment">// Publish the message
 <a href=#96 id=96 data-nosnippet>96</a>        </span>publisher.publish(<span class="kw-2">&amp;</span>pose)<span class="question-mark">?</span>;
-<a href=#97 id=97 data-nosnippet>97</a>        <span class="macro">println!</span>(<span class="string">"Published pose with x = {}"</span>, counter);
+<a href=#97 id=97 data-nosnippet>97</a>        <span class="macro">println!</span>(<span class="string">"Published pose with x = {counter}"</span>);
 <a href=#98 id=98 data-nosnippet>98</a>
 <a href=#99 id=99 data-nosnippet>99</a>        <span class="comment">// Call the service
 <a href=#100 id=100 data-nosnippet>100</a>        </span><span class="kw">let </span>request = AddTwoIntsRequest {
@@ -112,7 +112,7 @@
 <a href=#112 id=112 data-nosnippet>112</a>                );
 <a href=#113 id=113 data-nosnippet>113</a>            }
 <a href=#114 id=114 data-nosnippet>114</a>            <span class="prelude-val">Err</span>(e) =&gt; {
-<a href=#115 id=115 data-nosnippet>115</a>                <span class="macro">println!</span>(<span class="string">"Service call failed: {}"</span>, e);
+<a href=#115 id=115 data-nosnippet>115</a>                <span class="macro">println!</span>(<span class="string">"Service call failed: {e}"</span>);
 <a href=#116 id=116 data-nosnippet>116</a>            }
 <a href=#117 id=117 data-nosnippet>117</a>        };
 <a href=#118 id=118 data-nosnippet>118</a>
@@ -121,8 +121,8 @@
 <a href=#121 id=121 data-nosnippet>121</a>        <span class="kw">let </span>int_param: i32 = node.get_parameter(<span class="string">"int_param"</span>)<span class="question-mark">?</span>;
 <a href=#122 id=122 data-nosnippet>122</a>
 <a href=#123 id=123 data-nosnippet>123</a>        <span class="macro">println!</span>(<span class="string">"Parameters:"</span>);
-<a href=#124 id=124 data-nosnippet>124</a>        <span class="macro">println!</span>(<span class="string">"  string_param: {}"</span>, string_param);
-<a href=#125 id=125 data-nosnippet>125</a>        <span class="macro">println!</span>(<span class="string">"  int_param: {}"</span>, int_param);
+<a href=#124 id=124 data-nosnippet>124</a>        <span class="macro">println!</span>(<span class="string">"  string_param: {string_param}"</span>);
+<a href=#125 id=125 data-nosnippet>125</a>        <span class="macro">println!</span>(<span class="string">"  int_param: {int_param}"</span>);
 <a href=#126 id=126 data-nosnippet>126</a>
 <a href=#127 id=127 data-nosnippet>127</a>        <span class="comment">// Sleep for a while
 <a href=#128 id=128 data-nosnippet>128</a>        </span>tokio::time::sleep(Duration::from_secs(<span class="number">1</span>)).<span class="kw">await</span>;
