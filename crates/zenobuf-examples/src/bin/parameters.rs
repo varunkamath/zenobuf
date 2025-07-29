@@ -26,10 +26,10 @@ async fn main() -> Result<()> {
 
     // Print parameters
     println!("Parameters:");
-    println!("  string_param: {}", string_param);
-    println!("  int_param: {}", int_param);
-    println!("  float_param: {}", float_param);
-    println!("  bool_param: {}", bool_param);
+    println!("  string_param: {string_param}");
+    println!("  int_param: {int_param}");
+    println!("  float_param: {float_param}");
+    println!("  bool_param: {bool_param}");
 
     // Update a parameter
     println!("Updating int_param to 100");
@@ -37,7 +37,7 @@ async fn main() -> Result<()> {
 
     // Get the updated parameter
     let int_param: i32 = node.get_parameter("int_param")?;
-    println!("  int_param: {}", int_param);
+    println!("  int_param: {int_param}");
 
     // Sleep for a while
     tokio::time::sleep(Duration::from_secs(1)).await;
