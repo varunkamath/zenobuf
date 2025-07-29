@@ -46,7 +46,11 @@ pub async fn execute(cmd: ParamCommands) -> Result<()> {
 
 /// Gets a parameter
 async fn get_param(args: GetArgs) -> Result<()> {
-    println!("{label} {name}", label = style("Getting parameter:").bold(), name = args.name);
+    println!(
+        "{label} {name}",
+        label = style("Getting parameter:").bold(),
+        name = args.name
+    );
 
     // Connect to Zenoh
     let session = zenoh::open(zenoh::config::Config::default()).await?;
@@ -69,7 +73,10 @@ async fn get_param(args: GetArgs) -> Result<()> {
                     // Try to parse as JSON
                     match serde_json::from_slice::<Value>(&payload) {
                         Ok(json) => {
-                            println!("  Value: {value}", value = serde_json::to_string_pretty(&json)?);
+                            println!(
+                                "  Value: {value}",
+                                value = serde_json::to_string_pretty(&json)?
+                            );
                         }
                         Err(_) => {
                             // If not JSON, print as string
@@ -93,7 +100,11 @@ async fn get_param(args: GetArgs) -> Result<()> {
 
 /// Sets a parameter
 async fn set_param(args: SetArgs) -> Result<()> {
-    println!("{label} {name}", label = style("Setting parameter:").bold(), name = args.name);
+    println!(
+        "{label} {name}",
+        label = style("Setting parameter:").bold(),
+        name = args.name
+    );
     println!("  To value: {value}", value = args.value);
 
     // Parse the value as JSON
@@ -144,7 +155,11 @@ async fn list_params() -> Result<()> {
                 // Try to parse as JSON
                 match serde_json::from_slice::<Value>(&payload) {
                     Ok(json) => {
-                        println!("  {name}: {value}", name = param_name, value = serde_json::to_string(&json)?);
+                        println!(
+                            "  {name}: {value}",
+                            name = param_name,
+                            value = serde_json::to_string(&json)?
+                        );
                     }
                     Err(_) => {
                         // If not JSON, print as string

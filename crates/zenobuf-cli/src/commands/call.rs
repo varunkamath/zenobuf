@@ -24,7 +24,11 @@ pub struct CallArgs {
 
 /// Executes the call command
 pub async fn execute(args: CallArgs) -> Result<()> {
-    println!("{label} {service}", label = style("Calling service:").bold(), service = args.service);
+    println!(
+        "{label} {service}",
+        label = style("Calling service:").bold(),
+        service = args.service
+    );
 
     // Parse the request data
     let request_data = match &args.data {

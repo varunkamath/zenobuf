@@ -27,7 +27,11 @@ pub struct MonitorArgs {
 
 /// Executes the monitor command
 pub async fn execute(args: MonitorArgs) -> Result<()> {
-    println!("{label} {topic}", label = style("Monitoring topic:").bold(), topic = args.topic);
+    println!(
+        "{label} {topic}",
+        label = style("Monitoring topic:").bold(),
+        topic = args.topic
+    );
     println!("Press Ctrl+C to exit");
 
     // Connect to Zenoh
