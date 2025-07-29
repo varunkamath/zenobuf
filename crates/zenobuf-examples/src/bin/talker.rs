@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Publish the message
         publisher.publish(&pose)?;
-        println!("Published pose with x = {}", counter);
+        println!("Published pose with x = {counter}");
 
         // Sleep for a while
         tokio::time::sleep(Duration::from_secs(1)).await;

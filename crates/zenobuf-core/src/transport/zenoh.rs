@@ -217,7 +217,7 @@ impl ZenohService {
                                 tracing::error!("Service handler error: {}", e);
                                 // Try to send an error reply
                                 let _ = query
-                                    .reply_err(format!("Service error: {}", e).as_bytes().to_vec())
+                                    .reply_err(format!("Service error: {e}").as_bytes().to_vec())
                                     .await;
                             }
                         }
@@ -323,7 +323,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                     tracing::error!("Sample error: {}", e);
                                     last_error = Some(Error::service_call_failed(
                                         self.service_name.clone(),
-                                        format!("Error in response: {}", e),
+                                        format!("Error in response: {e}"),
                                     ));
                                 }
                             },
@@ -331,7 +331,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                 tracing::error!("Receive error: {}", e);
                                 last_error = Some(Error::service_call_failed(
                                     self.service_name.clone(),
-                                    format!("No response: {}", e),
+                                    format!("No response: {e}"),
                                 ));
                             }
                         }
@@ -420,7 +420,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                     tracing::error!("Sample error: {}", e);
                                     last_error = Some(Error::service_call_failed(
                                         service_name.clone(),
-                                        format!("Error in response: {}", e),
+                                        format!("Error in response: {e}"),
                                     ));
                                 }
                             },
@@ -428,7 +428,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                                 tracing::error!("Receive error: {}", e);
                                 last_error = Some(Error::service_call_failed(
                                     service_name.clone(),
-                                    format!("No response: {}", e),
+                                    format!("No response: {e}"),
                                 ));
                             }
                         }

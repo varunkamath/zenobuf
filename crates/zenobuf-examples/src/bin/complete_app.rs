@@ -94,7 +94,7 @@ async fn main() -> Result<()> {
 
         // Publish the message
         publisher.publish(&pose)?;
-        println!("Published pose with x = {}", counter);
+        println!("Published pose with x = {counter}");
 
         // Call the service
         let request = AddTwoIntsRequest {
@@ -112,7 +112,7 @@ async fn main() -> Result<()> {
                 );
             }
             Err(e) => {
-                println!("Service call failed: {}", e);
+                println!("Service call failed: {e}");
             }
         };
 
@@ -121,8 +121,8 @@ async fn main() -> Result<()> {
         let int_param: i32 = node.get_parameter("int_param")?;
 
         println!("Parameters:");
-        println!("  string_param: {}", string_param);
-        println!("  int_param: {}", int_param);
+        println!("  string_param: {string_param}");
+        println!("  int_param: {int_param}");
 
         // Sleep for a while
         tokio::time::sleep(Duration::from_secs(1)).await;
