@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     // Parse command-line arguments
     let args: Vec<String> = env::args().collect();
     if args.len() != 3 {
-        eprintln!("Usage: {} <a> <b>", args[0]);
+        eprintln!("Usage: {program} <a> <b>", program = args[0]);
         std::process::exit(1);
     }
 
@@ -32,11 +32,11 @@ async fn main() -> Result<()> {
     let request = AddTwoIntsRequest { a, b };
 
     // Call the service
-    println!("Calling service with {} + {}", a, b);
+    println!("Calling service with {a} + {b}");
     let response = client.call(&request)?;
 
     // Print the response
-    println!("Service response: {} + {} = {}", a, b, response.sum);
+    println!("Service response: {a} + {b} = {sum}", sum = response.sum);
 
     Ok(())
 }

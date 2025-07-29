@@ -42,7 +42,11 @@ impl ZenohTransport {
 
     /// Creates a publisher for the given topic
     pub async fn create_publisher<M: Message>(&self, topic: &str) -> Result<ZenohPublisher<M>> {
-        let prefixed_topic = format!("{}{}", Self::TOPIC_PREFIX, topic);
+        let prefixed_topic = format!(
+            "{prefix}{topic}",
+            prefix = Self::TOPIC_PREFIX,
+            topic = topic
+        );
         ZenohPublisher::new(self.session.clone(), prefixed_topic).await
     }
 
@@ -55,7 +59,11 @@ impl ZenohTransport {
     where
         F: Fn(M) + Send + Sync + 'static,
     {
-        let prefixed_topic = format!("{}{}", Self::TOPIC_PREFIX, topic);
+        let prefixed_topic = format!(
+            "{prefix}{topic}",
+            prefix = Self::TOPIC_PREFIX,
+            topic = topic
+        );
         ZenohSubscriber::new(self.session.clone(), &prefixed_topic, callback).await
     }
 
@@ -68,7 +76,11 @@ impl ZenohTransport {
     where
         F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
     {
-        let prefixed_service_name = format!("{}{}", Self::SERVICE_PREFIX, service_name);
+        let prefixed_service_name = format!(
+            "{prefix}{service_name}",
+            prefix = Self::SERVICE_PREFIX,
+            service_name = service_name
+        );
         ZenohService::new(self.session.clone(), &prefixed_service_name, handler).await
     }
 
@@ -77,7 +89,11 @@ impl ZenohTransport {
         &self,
         service_name: &str,
     ) -> Result<ZenohClient<Req, Res>> {
-        let prefixed_service_name = format!("{}{}", Self::SERVICE_PREFIX, service_name);
+        let prefixed_service_name = format!(
+            "{prefix}{service_name}",
+            prefix = Self::SERVICE_PREFIX,
+            service_name = service_name
+        );
         Ok(ZenohClient::new(
             self.session.clone(),
             &prefixed_service_name,

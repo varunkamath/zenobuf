@@ -46,13 +46,17 @@ pub async fn execute(cmd: ParamCommands) -> Result<()> {
 
 /// Gets a parameter
 async fn get_param(args: GetArgs) -> Result<()> {
-    println!("{} {}", style("Getting parameter:").bold(), args.name);
+    println!(
+        "{label} {name}",
+        label = style("Getting parameter:").bold(),
+        name = args.name
+    );
 
     // Connect to Zenoh
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full parameter path
-    let param_path = format!("zenobuf/param/{}", args.name);
+    let param_path = format!("zenobuf/param/{name}", name = args.name);
     let key_expr = KeyExpr::try_from(param_path)?;
 
     // Query for the parameter
@@ -69,12 +73,15 @@ async fn get_param(args: GetArgs) -> Result<()> {
                     // Try to parse as JSON
                     match serde_json::from_slice::<Value>(&payload) {
                         Ok(json) => {
-                            println!("  Value: {}", serde_json::to_string_pretty(&json)?);
+                            println!(
+                                "  Value: {value}",
+                                value = serde_json::to_string_pretty(&json)?
+                            );
                         }
                         Err(_) => {
                             // If not JSON, print as string
                             let payload_str = String::from_utf8_lossy(&payload);
-                            println!("  Value: {}", payload_str);
+                            println!("  Value: {payload_str}");
                         }
                     }
                 }
@@ -93,8 +100,12 @@ async fn get_param(args: GetArgs) -> Result<()> {
 
 /// Sets a parameter
 async fn set_param(args: SetArgs) -> Result<()> {
-    println!("{} {}", style("Setting parameter:").bold(), args.name);
-    println!("  To value: {}", args.value);
+    println!(
+        "{label} {name}",
+        label = style("Setting parameter:").bold(),
+        name = args.name
+    );
+    println!("  To value: {value}", value = args.value);
 
     // Parse the value as JSON
     let value = serde_json::from_str::<Value>(&args.value)?;
@@ -103,7 +114,7 @@ async fn set_param(args: SetArgs) -> Result<()> {
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full parameter path
-    let param_path = format!("zenobuf/param/{}", args.name);
+    let param_path = format!("zenobuf/param/{name}", name = args.name);
     let key_expr = KeyExpr::try_from(param_path)?;
 
     // Serialize the value
@@ -144,12 +155,16 @@ async fn list_params() -> Result<()> {
                 // Try to parse as JSON
                 match serde_json::from_slice::<Value>(&payload) {
                     Ok(json) => {
-                        println!("  {}: {}", param_name, serde_json::to_string(&json)?);
+                        println!(
+                            "  {name}: {value}",
+                            name = param_name,
+                            value = serde_json::to_string(&json)?
+                        );
                     }
                     Err(_) => {
                         // If not JSON, print as string
                         let payload_str = String::from_utf8_lossy(&payload);
-                        println!("  {}: {}", param_name, payload_str);
+                        println!("  {param_name}: {payload_str}");
                     }
                 }
             }

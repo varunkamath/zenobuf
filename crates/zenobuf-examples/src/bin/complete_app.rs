@@ -46,13 +46,13 @@ async fn main() -> Result<()> {
     let _service = node
         .service::<AddTwoIntsRequest, AddTwoIntsResponse>("add_two_ints")
         .build(|request| {
-            println!("Received request: {} + {}", request.a, request.b);
+            println!("Received request: {a} + {b}", a = request.a, b = request.b);
 
             let response = AddTwoIntsResponse {
                 sum: request.a + request.b,
             };
 
-            println!("Sending response: {}", response.sum);
+            println!("Sending response: {sum}", sum = response.sum);
             Ok(response)
         })
         .await?;

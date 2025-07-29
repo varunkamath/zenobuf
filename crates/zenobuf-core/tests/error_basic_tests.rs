@@ -4,8 +4,8 @@ use zenobuf_core::error::Error;
 fn test_error_display() {
     // Test serialization error (legacy)
     let error = Error::Serialization("failed to serialize".to_string());
-    assert!(format!("{}", error).contains("Serialization error"));
-    assert!(format!("{}", error).contains("failed to serialize"));
+    assert!(format!("{error}").contains("Serialization error"));
+    assert!(format!("{error}").contains("failed to serialize"));
 
     // Test new structured error constructors
     let error = Error::node_already_exists("test_node");
@@ -88,7 +88,7 @@ fn test_error_display() {
 fn test_error_debug() {
     // Test Debug implementation
     let error = Error::other("other error");
-    let debug_str = format!("{:?}", error);
+    let debug_str = format!("{error:?}");
     assert!(debug_str.contains("Other"));
     assert!(debug_str.contains("other error"));
 }

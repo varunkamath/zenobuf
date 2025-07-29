@@ -91,7 +91,7 @@ fn test_qos_profile_clone() {
 #[test]
 fn test_qos_profile_debug() {
     let qos = QosProfile::default();
-    let debug_str = format!("{:?}", qos);
+    let debug_str = format!("{qos:?}");
 
     assert!(debug_str.contains("QosProfile"));
     assert!(debug_str.contains("reliability"));

@@ -55,7 +55,7 @@ async fn list_nodes() -> Result<()> {
         println!("  No nodes found");
     } else {
         for node in nodes {
-            println!("  {}", node);
+            println!("  {node}");
         }
     }
 
@@ -90,7 +90,7 @@ async fn list_topics() -> Result<()> {
         println!("  No topics found");
     } else {
         for topic in topics {
-            println!("  {}", topic);
+            println!("  {topic}");
         }
     }
 
@@ -125,7 +125,7 @@ async fn list_services() -> Result<()> {
         println!("  No services found");
     } else {
         for service in services {
-            println!("  {}", service);
+            println!("  {service}");
         }
     }
 
