@@ -27,14 +27,14 @@ pub struct MonitorArgs {
 
 /// Executes the monitor command
 pub async fn execute(args: MonitorArgs) -> Result<()> {
-    println!("{} {}", style("Monitoring topic:").bold(), args.topic);
+    println!("{label} {topic}", label = style("Monitoring topic:").bold(), topic = args.topic);
     println!("Press Ctrl+C to exit");
 
     // Connect to Zenoh
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full topic path
-    let topic_path = format!("zenobuf/topic/{}", args.topic);
+    let topic_path = format!("zenobuf/topic/{topic}", topic = args.topic);
     let key_expr = KeyExpr::try_from(topic_path)?;
 
     // Subscribe to the topic
@@ -65,7 +65,7 @@ pub async fn execute(args: MonitorArgs) -> Result<()> {
                         // Try to parse as JSON
                         if let Ok(json) = serde_json::from_slice::<Value>(&payload) {
                             if args.timestamps {
-                                println!("{} {}", timestamp, serde_json::to_string_pretty(&json)?);
+                                println!("{timestamp} {json}", timestamp = timestamp, json = serde_json::to_string_pretty(&json)?);
                             } else {
                                 println!("{}", serde_json::to_string_pretty(&json)?);
                             }

@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _subscriber = node
         .subscriber::<Point>("points")
         .build(|point| {
-            println!("📨 Received point: ({}, {}, {})", point.x, point.y, point.z);
+            println!("📨 Received point: ({x}, {y}, {z})", x = point.x, y = point.y, z = point.z);
         })
         .await?;
     println!("✅ Subscriber created");
@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let _service = node
         .service::<AddRequest, AddResponse>("add")
         .build(|request| {
-            println!("🔧 Service: Adding {} + {}", request.a, request.b);
+            println!("🔧 Service: Adding {a} + {b}", a = request.a, b = request.b);
             Ok(AddResponse {
                 sum: request.a + request.b,
             })
@@ -59,11 +59,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             z: (i * 3) as f32,
         };
         publisher.publish(&point)?;
-        println!("📤 Published point #{}", i);
+        println!("📤 Published point #{i}");
 
         // Call the service
         let response = client.call(&AddRequest { a: i, b: i + 1 })?;
-        println!("🔄 Service response: {} + {} = {}", i, i + 1, response.sum);
+        println!("🔄 Service response: {i} + {b} = {sum}", b = i + 1, sum = response.sum);
 
         tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
     }
