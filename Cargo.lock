@@ -1629,7 +1629,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1db05f56d34358a8b1066f67cbb203ee3e7ed2ba674a6263a1d5ec6db2204323"
 dependencies = [
  "memchr",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "ucd-trie",
 ]
 
@@ -1908,7 +1908,7 @@ dependencies = [
  "rustc-hash",
  "rustls",
  "socket2 0.5.10",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tokio",
  "tracing",
  "web-time",
@@ -1931,7 +1931,7 @@ dependencies = [
  "rustls-pki-types",
  "rustls-platform-verifier",
  "slab",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tinyvec",
  "tracing",
  "web-time",
@@ -2042,7 +2042,7 @@ checksum = "dd6f9d3d47bdd2ad6945c5015a226ec6155d0bcdfd8f7cd29f86b71f8de99d2b"
 dependencies = [
  "getrandom 0.2.16",
  "libredox",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
 ]
 
 [[package]]
@@ -2737,11 +2737,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.12"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+checksum = "80d76d3f064b981389ecb4b6b7f45a0bf9fdac1d5b9204c7bd6714fecc302850"
 dependencies = [
- "thiserror-impl 2.0.12",
+ "thiserror-impl 2.0.15",
 ]
 
 [[package]]
@@ -2757,9 +2757,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.12"
+version = "2.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+checksum = "44d29feb33e986b6ea906bd9c3559a856983f92371b3eaa5e83782a351623de0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2839,7 +2839,7 @@ checksum = "ab41256c16d6fc2b3021545f20bf77a73200b18bd54040ac656dddfca6205bfa"
 dependencies = [
  "futures-util",
  "pin-project-lite",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tokio",
  "tokio-rustls",
 ]
@@ -3684,7 +3684,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-cli"
-version = "0.3.1"
+version = "0.3.3"
 dependencies = [
  "chrono",
  "clap",
@@ -3703,7 +3703,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-core"
-version = "0.3.1"
+version = "0.3.3"
 dependencies = [
  "async-trait",
  "bytes",
@@ -3712,7 +3712,7 @@ dependencies = [
  "rand 0.9.2",
  "serde",
  "serde_json",
- "thiserror 2.0.12",
+ "thiserror 2.0.15",
  "tokio",
  "tracing",
  "zenoh",
@@ -3720,7 +3720,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-examples"
-version = "0.3.1"
+version = "0.3.3"
 dependencies = [
  "prost",
  "prost-build",
@@ -3735,7 +3735,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-macros"
-version = "0.3.1"
+version = "0.3.3"
 dependencies = [
  "proc-macro2",
  "prost",
