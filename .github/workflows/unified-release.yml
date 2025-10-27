@@ -309,7 +309,7 @@ jobs:
           PROTOC: ${{ env.PROTOC }}
       
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: zenobuf-${{ matrix.platform.name }}
           path: |
