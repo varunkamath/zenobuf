@@ -148,6 +148,7 @@
 
 pub mod client;
 pub mod error;
+pub mod executor;
 pub mod message;
 pub mod node;
 pub mod parameter;

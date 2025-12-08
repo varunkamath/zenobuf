@@ -3,9 +3,11 @@
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use crate::client::Client;
 use crate::error::{Error, Result};
+use crate::executor::CallbackExecutor;
 use crate::message::Message;
 use crate::parameter::Parameter;
 use crate::publisher::Publisher;
@@ -45,9 +47,14 @@ pub struct PublisherHandle<M: Message> {
 }
 
 impl<M: Message> PublisherHandle<M> {
-    fn new(publisher: Arc<Publisher<M>>) -> Self {
+    fn new(
+        publisher: Arc<Publisher<M>>,
+        topic: String,
+        publishers_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
+    ) -> Self {
         let cleanup = DropGuard::new(move || {
-            // Cleanup logic can be added here if needed
+            publishers_map.lock().unwrap().remove(&topic);
+            tracing::debug!("Publisher dropped for topic: {}", topic);
         });
 
         Self {
@@ -79,9 +86,14 @@ pub struct SubscriberHandle {
 }
 
 impl SubscriberHandle {
-    fn new(subscriber: Arc<Subscriber>) -> Self {
+    fn new(
+        subscriber: Arc<Subscriber>,
+        topic: String,
+        subscribers_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
+    ) -> Self {
         let cleanup = DropGuard::new(move || {
-            // Cleanup logic can be added here if needed
+            subscribers_map.lock().unwrap().remove(&topic);
+            tracing::debug!("Subscriber dropped for topic: {}", topic);
         });
 
         Self {
@@ -103,9 +115,14 @@ pub struct ServiceHandle {
 }
 
 impl ServiceHandle {
-    fn new(service: Arc<Service>) -> Self {
+    fn new(
+        service: Arc<Service>,
+        service_name: String,
+        services_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
+    ) -> Self {
         let cleanup = DropGuard::new(move || {
-            // Cleanup logic can be added here if needed
+            services_map.lock().unwrap().remove(&service_name);
+            tracing::debug!("Service dropped: {}", service_name);
         });
 
         Self {
@@ -127,9 +144,14 @@ pub struct ClientHandle<Req: Message, Res: Message> {
 }
 
 impl<Req: Message, Res: Message> ClientHandle<Req, Res> {
-    fn new(client: Arc<Client<Req, Res>>) -> Self {
+    fn new(
+        client: Arc<Client<Req, Res>>,
+        service_name: String,
+        clients_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
+    ) -> Self {
         let cleanup = DropGuard::new(move || {
-            // Cleanup logic can be added here if needed
+            clients_map.lock().unwrap().remove(&service_name);
+            tracing::debug!("Client dropped for service: {}", service_name);
         });
 
         Self {
@@ -163,36 +185,96 @@ pub struct Node {
     name: String,
     /// Transport layer
     transport: ZenohTransport,
+    /// Callback executor for processing subscriber callbacks
+    executor: Arc<CallbackExecutor>,
     /// Publishers
-    publishers: Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>,
+    publishers: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     /// Subscribers
-    subscribers: Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>,
+    subscribers: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     /// Services
-    services: Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>,
+    services: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     /// Clients
-    clients: Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>,
+    clients: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     /// Parameters
     parameters: Mutex<HashMap<String, Parameter>>,
+    /// Discovery queryable (keeps node discoverable while alive)
+    _discovery_queryable:
+        Option<zenoh::query::Queryable<zenoh::handlers::FifoChannelHandler<zenoh::query::Query>>>,
 }
 
 impl Node {
+    /// Prefix for node discovery key expressions
+    pub const NODE_PREFIX: &str = "zenobuf/node/";
+
     /// Creates a new Node with the given name
     pub async fn new(name: &str) -> Result<Self> {
         let transport = ZenohTransport::new().await?;
-        Self::with_transport(name, transport)
+        Self::with_transport(name, transport).await
     }
 
     /// Creates a new Node with the given name and transport
-    pub fn with_transport(name: &str, transport: ZenohTransport) -> Result<Self> {
+    pub async fn with_transport(name: &str, transport: ZenohTransport) -> Result<Self> {
+        // Create discovery queryable so this node is discoverable
+        let discovery_queryable = Self::create_discovery_queryable(&transport, name).await?;
+
         Ok(Self {
             name: name.to_string(),
             transport,
-            publishers: Mutex::new(HashMap::new()),
-            subscribers: Mutex::new(HashMap::new()),
-            services: Mutex::new(HashMap::new()),
-            clients: Mutex::new(HashMap::new()),
+            executor: Arc::new(CallbackExecutor::new()),
+            publishers: Arc::new(Mutex::new(HashMap::new())),
+            subscribers: Arc::new(Mutex::new(HashMap::new())),
+            services: Arc::new(Mutex::new(HashMap::new())),
+            clients: Arc::new(Mutex::new(HashMap::new())),
             parameters: Mutex::new(HashMap::new()),
+            _discovery_queryable: Some(discovery_queryable),
         })
+    }
+
+    /// Creates a discovery queryable that responds to node discovery queries
+    async fn create_discovery_queryable(
+        transport: &ZenohTransport,
+        name: &str,
+    ) -> Result<zenoh::query::Queryable<zenoh::handlers::FifoChannelHandler<zenoh::query::Query>>>
+    {
+        let key = format!("{}{}", Self::NODE_PREFIX, name);
+        let key_expr = zenoh::key_expr::KeyExpr::try_from(key.clone())
+            .map_err(|e| Error::node(name, format!("Failed to create discovery key: {}", e)))?;
+
+        let node_info = serde_json::json!({
+            "name": name,
+            "status": "active",
+            "pid": std::process::id(),
+        });
+
+        let queryable = transport
+            .session()
+            .declare_queryable(key_expr)
+            .await
+            .map_err(Error::from)?;
+
+        // Clone for the spawned task
+        let queryable_clone = queryable.clone();
+        let info_str = node_info.to_string();
+        let key_clone = key.clone();
+
+        // Spawn task to respond to discovery queries
+        tokio::spawn(async move {
+            while let Ok(query) = queryable_clone.recv_async().await {
+                let _ = query.reply(&key_clone, info_str.clone()).await;
+            }
+        });
+
+        tracing::debug!("Node '{}' registered for discovery at {}", name, key);
+
+        Ok(queryable)
+    }
+
+    /// Returns a reference to the callback executor
+    ///
+    /// This is used internally by the transport layer to queue callbacks.
+    #[allow(dead_code)]
+    pub(crate) fn executor(&self) -> &Arc<CallbackExecutor> {
+        &self.executor
     }
 
     /// Returns the name of the node
@@ -204,7 +286,7 @@ impl Node {
     pub async fn create_publisher<M: Message>(
         &self,
         topic: &str,
-        _qos: QosProfile,
+        qos: QosProfile,
     ) -> Result<Arc<Publisher<M>>> {
         // Use the topic name as provided by the user (global topics by default)
         let topic_name = topic.to_string();
@@ -217,8 +299,11 @@ impl Node {
             }
         } // MutexGuard is dropped here
 
-        // Create the publisher
-        let inner_publisher = self.transport.create_publisher::<M>(&topic_name).await?;
+        // Create the publisher with QoS settings
+        let inner_publisher = self
+            .transport
+            .create_publisher::<M>(&topic_name, &qos)
+            .await?;
         let publisher = Arc::new(Publisher::new(
             topic_name.clone(),
             Box::new(inner_publisher),
@@ -235,12 +320,13 @@ impl Node {
     pub async fn create_subscriber<M: Message, F>(
         &self,
         topic: &str,
-        _qos: QosProfile,
+        #[allow(unused_variables)] qos: QosProfile,
         callback: F,
     ) -> Result<Arc<Subscriber>>
     where
         F: Fn(M) + Send + Sync + 'static,
     {
+        // Note: Subscriber QoS is not currently mapped to Zenoh (planned for future release)
         // Use the topic name as provided by the user (global topics by default)
         let topic_name = topic.to_string();
 
@@ -252,10 +338,10 @@ impl Node {
             }
         } // MutexGuard is dropped here
 
-        // Create the subscriber
+        // Create the subscriber with executor for callback queueing
         let inner_subscriber = self
             .transport
-            .create_subscriber::<M, F>(&topic_name, callback)
+            .create_subscriber::<M, F>(&topic_name, callback, Some(self.executor.clone()))
             .await?;
         let subscriber = Arc::new(Subscriber::new(
             topic_name.clone(),
@@ -368,39 +454,54 @@ impl Node {
     }
 
     /// Spins the node once, processing all pending callbacks
-    pub fn spin_once(&self) -> Result<()> {
-        // In a real implementation, this would process all pending callbacks
-        // For now, we just return Ok
-        Ok(())
+    ///
+    /// Returns the number of callbacks that were processed.
+    pub fn spin_once(&self) -> Result<usize> {
+        Ok(self.executor.process_pending())
     }
 
     /// Spins the node, processing callbacks until the node is shutdown
+    ///
+    /// This method will block until `shutdown()` is called on the node.
     pub async fn spin(&self) -> Result<()> {
-        // In a real implementation, this would process callbacks until shutdown
-        // For now, we just wait forever
-        std::future::pending::<()>().await;
+        while !self.executor.is_shutdown() {
+            self.spin_once()?;
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
         Ok(())
+    }
+
+    /// Shuts down the node
+    ///
+    /// This will cause `spin()` to return and prevent new callbacks from being queued.
+    pub fn shutdown(&self) {
+        self.executor.shutdown();
+    }
+
+    /// Returns true if the node has been shutdown
+    pub fn is_shutdown(&self) -> bool {
+        self.executor.is_shutdown()
     }
 
     // Builder pattern methods for simplified API
 
     /// Creates a publisher builder for the given topic
-    pub fn publisher<M: Message>(&self, topic: &str) -> PublisherBuilder<M> {
+    pub fn publisher<M: Message>(&self, topic: &str) -> PublisherBuilder<'_, M> {
         PublisherBuilder::new(self, topic)
     }
 
     /// Creates a subscriber builder for the given topic
-    pub fn subscriber<M: Message>(&self, topic: &str) -> SubscriberBuilder<M> {
+    pub fn subscriber<M: Message>(&self, topic: &str) -> SubscriberBuilder<'_, M> {
         SubscriberBuilder::new(self, topic)
     }
 
     /// Creates a service builder for the given service name
-    pub fn service<Req: Message, Res: Message>(&self, name: &str) -> ServiceBuilder<Req, Res> {
+    pub fn service<Req: Message, Res: Message>(&self, name: &str) -> ServiceBuilder<'_, Req, Res> {
         ServiceBuilder::new(self, name)
     }
 
     /// Creates a client builder for the given service name
-    pub fn client<Req: Message, Res: Message>(&self, name: &str) -> ClientBuilder<Req, Res> {
+    pub fn client<Req: Message, Res: Message>(&self, name: &str) -> ClientBuilder<'_, Req, Res> {
         ClientBuilder::new(self, name)
     }
 
@@ -475,8 +576,13 @@ impl<'a, M: Message> PublisherBuilder<'a, M> {
 
     /// Builds the publisher
     pub async fn build(self) -> Result<PublisherHandle<M>> {
+        let topic = self.topic.clone();
         let publisher = self.node.create_publisher(&self.topic, self.qos).await?;
-        Ok(PublisherHandle::new(publisher))
+        Ok(PublisherHandle::new(
+            publisher,
+            topic,
+            self.node.publishers.clone(),
+        ))
     }
 }
 
@@ -533,11 +639,16 @@ impl<'a, M: Message> SubscriberBuilder<'a, M> {
     where
         F: Fn(M) + Send + Sync + 'static,
     {
+        let topic = self.topic.clone();
         let subscriber = self
             .node
             .create_subscriber(&self.topic, self.qos, callback)
             .await?;
-        Ok(SubscriberHandle::new(subscriber))
+        Ok(SubscriberHandle::new(
+            subscriber,
+            topic,
+            self.node.subscribers.clone(),
+        ))
     }
 }
 
@@ -562,8 +673,13 @@ impl<'a, Req: Message, Res: Message> ServiceBuilder<'a, Req, Res> {
     where
         F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
     {
+        let name = self.name.clone();
         let service = self.node.create_service(&self.name, handler).await?;
-        Ok(ServiceHandle::new(service))
+        Ok(ServiceHandle::new(
+            service,
+            name,
+            self.node.services.clone(),
+        ))
     }
 }
 
@@ -585,7 +701,8 @@ impl<'a, Req: Message, Res: Message> ClientBuilder<'a, Req, Res> {
 
     /// Builds the client
     pub fn build(self) -> Result<ClientHandle<Req, Res>> {
+        let name = self.name.clone();
         let client = self.node.create_client(&self.name)?;
-        Ok(ClientHandle::new(client))
+        Ok(ClientHandle::new(client, name, self.node.clients.clone()))
     }
 }

@@ -210,7 +210,7 @@ impl Message for AddResponse {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_publisher_handle_automatic_cleanup() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Create a publisher handle
     let publisher_handle = node
@@ -237,7 +237,7 @@ async fn test_publisher_handle_automatic_cleanup() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_subscriber_handle_automatic_cleanup() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     let received = Arc::new(Mutex::new(None));
     let received_clone = received.clone();
@@ -264,7 +264,7 @@ async fn test_subscriber_handle_automatic_cleanup() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_service_handle_automatic_cleanup() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Create a service handle
     let service_handle = node
@@ -285,7 +285,7 @@ async fn test_service_handle_automatic_cleanup() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_client_handle_automatic_cleanup() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Create a client handle
     let client_handle = node

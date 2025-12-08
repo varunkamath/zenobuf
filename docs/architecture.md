@@ -9,18 +9,23 @@ Zenobuf is a distributed systems framework inspired by ROS (Robot Operating Syst
 ## Design Principles
 
 ### 1. Type Safety
+
 Zenobuf leverages Rust's type system to provide compile-time guarantees about message types and API usage. The `Message` trait ensures that only valid types can be sent over the network.
 
 ### 2. Zero-Copy Where Possible
+
 The framework minimizes data copying by using efficient serialization and leveraging Zenoh's zero-copy capabilities where possible.
 
 ### 3. Async-First
+
 All I/O operations are asynchronous by default, built on top of Tokio for high-performance concurrent operations.
 
 ### 4. Ergonomic API
+
 The API is designed to be intuitive and easy to use, with builder patterns and sensible defaults.
 
 ### 5. Pluggable Transport
+
 While Zenoh is the default transport, the architecture allows for pluggable transport implementations.
 
 ## System Architecture
@@ -160,6 +165,7 @@ pub struct QosProfile {
 ```
 
 QoS profiles are implemented at the transport layer and affect:
+
 - **Reliability**: Whether messages are guaranteed to be delivered
 - **Durability**: Whether messages are stored for late-joining subscribers
 - **Ordering**: Whether message ordering is preserved
@@ -208,6 +214,7 @@ impl Drop for DropGuard {
 ```
 
 When publishers, subscribers, services, or clients are dropped, they automatically:
+
 - Close network connections
 - Stop background tasks
 - Clean up resources
@@ -215,6 +222,7 @@ When publishers, subscribers, services, or clients are dropped, they automatical
 ### Reference Counting
 
 Internal components use `Arc<T>` for shared ownership:
+
 - Publishers and subscribers can be cloned and shared across threads
 - Services and clients maintain shared state safely
 - Transport layer is shared across all endpoints
@@ -240,6 +248,7 @@ pub enum Error {
 ```
 
 Errors include:
+
 - **Context**: Where the error occurred
 - **Source**: The underlying cause
 - **Type Information**: What type was involved
@@ -250,6 +259,7 @@ Errors include:
 ### Node Discovery
 
 Nodes automatically discover each other through the Zenoh network:
+
 1. When a node starts, it announces itself
 2. Other nodes receive the announcement
 3. Nodes maintain a registry of active nodes
@@ -257,6 +267,7 @@ Nodes automatically discover each other through the Zenoh network:
 ### Topic and Service Discovery
 
 Topics and services are discovered dynamically:
+
 1. Publishers announce their topics
 2. Services announce their endpoints
 3. Subscribers and clients discover available endpoints
@@ -294,6 +305,7 @@ Topics and services are discovered dynamically:
 ### Transport Security
 
 Zenoh provides built-in security features:
+
 - **Authentication**: Node identity verification
 - **Encryption**: TLS encryption for network traffic
 - **Authorization**: Access control for topics and services
@@ -309,6 +321,7 @@ Zenoh provides built-in security features:
 ### Single Process
 
 Multiple nodes can run in a single process:
+
 ```rust
 let node1 = Node::new("publisher").await?;
 let node2 = Node::new("subscriber").await?;
@@ -357,6 +370,7 @@ Each node can run in its own container with service discovery through the contai
 ### Extension Points
 
 The architecture supports extensions through:
+
 - **Custom Transports**: Implement the `Transport` trait
 - **Custom Serialization**: Implement the `Message` trait
 - **Middleware**: Intercept messages for logging, filtering, etc.

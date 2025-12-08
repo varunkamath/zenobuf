@@ -87,6 +87,7 @@ pub mod proto {
 ### 🚀 Quick Start Template
 
 For the fastest way to get started, copy the [starter template](starter-template/) which includes:
+
 - Pre-configured `Cargo.toml` and `build.rs`
 - Example protobuf definitions
 - Complete working example with publisher, subscriber, service, and client
@@ -211,6 +212,7 @@ println!("Parameter value: {}", value);
 ## 📚 Documentation
 
 ### Quick Links
+
 - **[📖 Getting Started Guide](docs/getting-started.md)** - Complete tutorial from installation to your first app
 - **[🔧 API Reference](docs/api-guide.md)** - Comprehensive API documentation with examples
 - **[🏗️ Architecture Guide](docs/architecture.md)** - System design and internal architecture
@@ -254,7 +256,7 @@ zenobuf-cli param set max_speed 15.0
 
 This project is licensed under either of
 
-- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.

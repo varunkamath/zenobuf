@@ -5,12 +5,14 @@ This is a simple starter template for using Zenobuf with your own protobuf defin
 ## Quick Start
 
 1. **Copy this template to your project:**
+
    ```bash
    cp -r starter-template my-zenobuf-app
    cd my-zenobuf-app
    ```
 
 2. **Update dependencies in Cargo.toml** (change path dependencies to version dependencies):
+
    ```toml
    [dependencies]
    zenobuf-core = "0.2"
@@ -18,6 +20,7 @@ This is a simple starter template for using Zenobuf with your own protobuf defin
    ```
 
 3. **Run the example:**
+
    ```bash
    cargo run
    ```

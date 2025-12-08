@@ -5,10 +5,13 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use futures::future::BoxFuture;
+use zenoh::qos::{CongestionControl, Priority};
 use zenoh::{self, key_expr::KeyExpr};
 
 use crate::error::{Error, Result};
+use crate::executor::CallbackExecutor;
 use crate::message::{decode_message, encode_message, Message};
+use crate::qos::{QosProfile, Reliability};
 
 use super::{Client, Publisher, Service, Subscriber, Transport};
 use async_trait::async_trait;
@@ -40,14 +43,47 @@ impl ZenohTransport {
         })
     }
 
-    /// Creates a publisher for the given topic
-    pub async fn create_publisher<M: Message>(&self, topic: &str) -> Result<ZenohPublisher<M>> {
+    /// Returns a reference to the Zenoh session
+    pub(crate) fn session(&self) -> &Arc<zenoh::Session> {
+        &self.session
+    }
+
+    /// Maps Zenobuf reliability to Zenoh CongestionControl
+    fn map_reliability(qos: &QosProfile) -> CongestionControl {
+        match qos.reliability {
+            Reliability::Reliable => CongestionControl::Block,
+            Reliability::BestEffort => CongestionControl::Drop,
+        }
+    }
+
+    /// Maps Zenobuf QoS depth to Zenoh Priority
+    fn map_priority(qos: &QosProfile) -> Priority {
+        match qos.depth {
+            0..=1 => Priority::RealTime,
+            2..=5 => Priority::InteractiveHigh,
+            6..=10 => Priority::InteractiveLow,
+            _ => Priority::Data,
+        }
+    }
+
+    /// Creates a publisher for the given topic with QoS settings
+    pub async fn create_publisher<M: Message>(
+        &self,
+        topic: &str,
+        qos: &QosProfile,
+    ) -> Result<ZenohPublisher<M>> {
         let prefixed_topic = format!(
             "{prefix}{topic}",
             prefix = Self::TOPIC_PREFIX,
             topic = topic
         );
-        ZenohPublisher::new(self.session.clone(), prefixed_topic).await
+        ZenohPublisher::new(
+            self.session.clone(),
+            prefixed_topic,
+            Self::map_reliability(qos),
+            Self::map_priority(qos),
+        )
+        .await
     }
 
     /// Creates a subscriber for the given topic
@@ -55,6 +91,7 @@ impl ZenohTransport {
         &self,
         topic: &str,
         callback: F,
+        executor: Option<Arc<CallbackExecutor>>,
     ) -> Result<ZenohSubscriber>
     where
         F: Fn(M) + Send + Sync + 'static,
@@ -64,7 +101,7 @@ impl ZenohTransport {
             prefix = Self::TOPIC_PREFIX,
             topic = topic
         );
-        ZenohSubscriber::new(self.session.clone(), &prefixed_topic, callback).await
+        ZenohSubscriber::new(self.session.clone(), &prefixed_topic, callback, executor).await
     }
 
     /// Creates a service for the given name
@@ -108,15 +145,29 @@ pub struct ZenohPublisher<M: Message> {
 }
 
 impl<M: Message> ZenohPublisher<M> {
-    /// Creates a new Zenoh publisher
-    async fn new(session: Arc<zenoh::Session>, topic: String) -> Result<Self> {
+    /// Creates a new Zenoh publisher with QoS settings
+    async fn new(
+        session: Arc<zenoh::Session>,
+        topic: String,
+        congestion_control: CongestionControl,
+        priority: Priority,
+    ) -> Result<Self> {
         let topic_clone = topic.clone();
         let key_expr = KeyExpr::try_from(topic.clone())
             .map_err(|e| Error::publisher(topic_clone, e.to_string()))?;
         let publisher = session
             .declare_publisher(key_expr)
+            .congestion_control(congestion_control)
+            .priority(priority)
             .await
             .map_err(Error::from)?;
+
+        tracing::debug!(
+            "Publisher created: topic={}, congestion={:?}, priority={:?}",
+            topic,
+            congestion_control,
+            priority
+        );
 
         Ok(Self {
             publisher,
@@ -147,34 +198,45 @@ pub struct ZenohSubscriber {
 
 impl ZenohSubscriber {
     /// Creates a new Zenoh subscriber
+    ///
+    /// If an executor is provided, callbacks will be queued to it for later processing
+    /// by the node's spin methods. Otherwise, callbacks are executed directly in the
+    /// Zenoh callback thread.
     async fn new<M: Message, F>(
         session: Arc<zenoh::Session>,
         topic: &str,
         callback: F,
+        executor: Option<Arc<CallbackExecutor>>,
     ) -> Result<Self>
     where
         F: Fn(M) + Send + Sync + 'static,
     {
         let key_expr =
             KeyExpr::try_from(topic).map_err(|e| Error::subscriber(topic, e.to_string()))?;
+
+        let callback = Arc::new(callback);
+
         let subscriber = session
             .declare_subscriber(key_expr)
             .callback(move |sample| {
                 let bytes = sample.payload().to_bytes();
                 if let Ok(message) = decode_message::<M>(bytes.as_ref()) {
-                    callback(message);
+                    if let Some(ref exec) = executor {
+                        // Queue callback for processing by spin()
+                        let cb = callback.clone();
+                        exec.enqueue(Box::new(move || cb(message)));
+                    } else {
+                        // Execute callback directly (legacy behavior)
+                        callback(message);
+                    }
                 }
             })
             .await
             .map_err(Error::from)?;
 
-        // We need to modify our struct definition to match what Zenoh returns
-        // For now, let's just store the subscriber directly
-        let result = Self {
+        Ok(Self {
             _subscriber: subscriber,
-        };
-
-        Ok(result)
+        })
     }
 }
 
@@ -489,7 +551,14 @@ impl Transport for ZenohTransport {
         &self,
         topic: &str,
     ) -> Result<Arc<crate::publisher::Publisher<M>>> {
-        let zenoh_publisher = ZenohPublisher::new(self.session.clone(), topic.to_string()).await?;
+        // Transport trait doesn't have access to QoS, use defaults
+        let zenoh_publisher = ZenohPublisher::new(
+            self.session.clone(),
+            topic.to_string(),
+            CongestionControl::Block, // Default: reliable
+            Priority::Data,           // Default: normal priority
+        )
+        .await?;
         Ok(Arc::new(crate::publisher::Publisher::new(
             topic.to_string(),
             Box::new(zenoh_publisher),
@@ -504,7 +573,9 @@ impl Transport for ZenohTransport {
     where
         F: Fn(M) + Send + Sync + 'static,
     {
-        let zenoh_subscriber = ZenohSubscriber::new(self.session.clone(), topic, callback).await?;
+        // Transport trait doesn't have access to executor, use direct callback mode
+        let zenoh_subscriber =
+            ZenohSubscriber::new(self.session.clone(), topic, callback, None).await?;
         Ok(Arc::new(crate::subscriber::Subscriber::new(
             topic.to_string(),
             Box::new(zenoh_subscriber),

@@ -205,7 +205,9 @@ async fn test_parameter_basic() {
     let transport = ZenohTransport::new().await.unwrap();
 
     // Create a node
-    let node = Node::with_transport("parameter_node", transport).unwrap();
+    let node = Node::with_transport("parameter_node", transport)
+        .await
+        .unwrap();
 
     // Set parameters of different types
     node.set_parameter("string_param", "hello".to_string())
@@ -241,7 +243,9 @@ async fn test_service_client_basic() {
     let transport = ZenohTransport::new().await.unwrap();
 
     // Create a node
-    let node = Node::with_transport("service_client_node", transport).unwrap();
+    let node = Node::with_transport("service_client_node", transport)
+        .await
+        .unwrap();
 
     // Create a service
     let _service = node
@@ -278,7 +282,9 @@ async fn test_pub_sub_basic() {
     let transport = ZenohTransport::new().await.unwrap();
 
     // Create a node
-    let node = Node::with_transport("pub_sub_node", transport).unwrap();
+    let node = Node::with_transport("pub_sub_node", transport)
+        .await
+        .unwrap();
 
     // Create a variable to store the received message
     let received = Arc::new(Mutex::new(None));
@@ -328,7 +334,9 @@ async fn test_complex_workflow() {
     let transport = ZenohTransport::new().await.unwrap();
 
     // Create a node
-    let node = Node::with_transport("complex_node", transport).unwrap();
+    let node = Node::with_transport("complex_node", transport)
+        .await
+        .unwrap();
 
     // Set a parameter
     node.set_parameter("count", 0).unwrap();

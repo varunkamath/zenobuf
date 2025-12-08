@@ -5,14 +5,17 @@ Welcome to the Zenobuf documentation! Zenobuf is a lightweight, ergonomic framew
 ## 📚 Documentation Structure
 
 ### For New Users
+
 - **[Getting Started Guide](getting-started.md)** - Complete tutorial from installation to building your first distributed system
 - **[Starter Template](../starter-template/)** - Ready-to-use project template
 
 ### For Developers
+
 - **[API Reference Guide](api-guide.md)** - Comprehensive API documentation with examples
 - **[Architecture Overview](architecture.md)** - System design and internal architecture
 
 ### For Contributors
+
 - **[Contributing Guide](../CONTRIBUTING.md)** - How to contribute to the project
 - **[Changelog](../CHANGELOG.md)** - Project history and changes
 
@@ -36,7 +39,9 @@ cargo run
 ## 📦 Crate Overview
 
 ### [zenobuf-core](https://docs.rs/zenobuf-core)
+
 The main library providing:
+
 - **Node management** - Central coordination point
 - **Pub/Sub messaging** - Type-safe publish-subscribe communication
 - **RPC services** - Request-response communication
@@ -44,19 +49,25 @@ The main library providing:
 - **QoS profiles** - Quality of service guarantees
 
 ### [zenobuf-macros](https://docs.rs/zenobuf-macros)
+
 Procedural macros for seamless Protocol Buffer integration:
+
 - **`#[derive(ZenobufMessage)]`** - Automatic Message trait implementation
 - **Build script integration** - Automatic code generation
 
 ### [zenobuf-cli](https://docs.rs/zenobuf-cli)
+
 Command-line tools for development and debugging:
+
 - **Topic monitoring** - `zenobuf-cli monitor <topic>`
 - **Service calls** - `zenobuf-cli call <service>`
 - **Parameter management** - `zenobuf-cli param get/set`
 - **System inspection** - `zenobuf-cli list nodes/topics/services`
 
 ### [zenobuf-examples](https://docs.rs/zenobuf-examples)
+
 Complete working examples:
+
 - **Publisher/Subscriber** - Basic messaging patterns
 - **Service/Client** - RPC communication
 - **Parameter usage** - Configuration management
@@ -90,6 +101,7 @@ zenobuf/
 ## 🔧 Development Workflow
 
 ### Building the Project
+
 ```bash
 # Build all crates
 cargo build
@@ -102,6 +114,7 @@ cargo build --all-features
 ```
 
 ### Running Examples
+
 ```bash
 # Run the complete example
 cargo run --bin complete_app
@@ -116,6 +129,7 @@ cargo run --bin client 5 3
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 cargo test
@@ -128,6 +142,7 @@ cargo test --test integration_tests
 ```
 
 ### Documentation
+
 ```bash
 # Generate and open docs
 cargo doc --open
@@ -139,16 +154,19 @@ cargo doc --workspace --no-deps
 ## 🌟 Key Features
 
 ### Type Safety
+
 - **Compile-time guarantees** - Message types are checked at compile time
 - **Protocol Buffer integration** - Automatic code generation with type safety
 - **Builder patterns** - Fluent, type-safe API design
 
 ### Performance
+
 - **Zero-copy messaging** - Efficient serialization with minimal copying
 - **Async-first design** - Built on Tokio for high concurrency
 - **Zenoh transport** - High-performance, low-latency networking
 
 ### Developer Experience
+
 - **Ergonomic API** - Intuitive, Rust-idiomatic interfaces
 - **Comprehensive examples** - Real-world usage patterns
 - **Rich tooling** - CLI tools for development and debugging
@@ -157,16 +175,19 @@ cargo doc --workspace --no-deps
 ## 🎯 Use Cases
 
 ### Robotics
+
 - **Sensor data processing** - High-frequency sensor data streams
 - **Control systems** - Real-time control loops
 - **Multi-robot coordination** - Distributed robot fleets
 
 ### IoT Systems
+
 - **Device communication** - Sensor networks and actuator control
 - **Edge computing** - Distributed processing at the edge
 - **Data aggregation** - Collecting and processing IoT data
 
 ### Distributed Applications
+
 - **Microservices** - Service-oriented architectures
 - **Event-driven systems** - Reactive, event-based applications
 - **Real-time systems** - Low-latency, high-throughput applications
@@ -203,6 +224,7 @@ cargo doc --workspace --no-deps
 ## 📄 License
 
 Zenobuf is dual-licensed under either:
+
 - [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 - [MIT License](http://opensource.org/licenses/MIT)
 

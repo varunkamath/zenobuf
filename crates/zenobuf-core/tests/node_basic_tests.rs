@@ -4,7 +4,7 @@ use zenobuf_core::transport::ZenohTransport;
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_node_creation() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     assert_eq!(node.name(), "test_node");
 }
@@ -12,7 +12,7 @@ async fn test_node_creation() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_node_parameter() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Set a parameter
     node.set_parameter("test_param", 42).unwrap();
@@ -34,7 +34,7 @@ async fn test_node_parameter() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_node_spin_once() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Spin once should not fail
     node.spin_once().unwrap();

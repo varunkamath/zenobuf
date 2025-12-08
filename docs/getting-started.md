@@ -5,6 +5,7 @@ Zenobuf is a lightweight, ergonomic framework for building distributed systems i
 ## What is Zenobuf?
 
 Zenobuf provides a ROS-like framework with:
+
 - **Publish-Subscribe Messaging**: Send and receive messages on topics
 - **Service-Based RPC**: Request-response communication between nodes
 - **Parameter System**: Store and retrieve configuration values
@@ -15,8 +16,9 @@ Zenobuf provides a ROS-like framework with:
 ## Prerequisites
 
 Before you begin, make sure you have:
+
 - **Rust 1.70 or later**: Install from [rustup.rs](https://rustup.rs/)
-- **Protocol Buffers compiler (`protoc`) 3.0 or later**: 
+- **Protocol Buffers compiler (`protoc`) 3.0 or later**:
   - On Ubuntu/Debian: `sudo apt install protobuf-compiler`
   - On macOS: `brew install protobuf`
   - On Windows: Download from [Protocol Buffers releases](https://github.com/protocolbuffers/protobuf/releases)
@@ -213,6 +215,7 @@ cargo run
 ```
 
 You should see output like:
+
 ```
 📡 Publisher started! Publishing sensor data and points...
 📤 Published sensor reading: temp_sensor_01 = 20.00°C

@@ -7,6 +7,6 @@ members = [
 [workspace.package]
 version = "0.3.2"
 edition = "2021"
-authors = ["Zenobuf Team"]
-description = "A simpler ROS-like framework in Rust"
+authors = ["Varun Kamath"]
+description = "A simple ROS-like framework using Zenoh in Rust"
 license = "MIT OR Apache-2.0"

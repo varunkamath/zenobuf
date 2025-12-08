@@ -621,6 +621,7 @@ pub struct MyMessage {
 ### Message Requirements
 
 Types that implement `Message` must also implement:
+
 - `Clone`
 - `PartialEq`
 - `Default`

@@ -211,7 +211,7 @@ impl Message for AddResponse {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_publisher_builder_api() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Test basic builder pattern
     let publisher = node
@@ -247,7 +247,7 @@ async fn test_publisher_builder_api() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_subscriber_builder_api() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     let received = Arc::new(Mutex::new(None));
     let received_clone = received.clone();
@@ -280,7 +280,7 @@ async fn test_subscriber_builder_api() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_service_builder_api() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Test basic service builder
     let _service = node
@@ -293,7 +293,7 @@ async fn test_service_builder_api() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_client_builder_api() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Test basic client builder
     let _client = node
@@ -305,7 +305,7 @@ async fn test_client_builder_api() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_simplified_convenience_methods() {
     let transport = ZenohTransport::new().await.unwrap();
-    let node = Node::with_transport("test_node", transport).unwrap();
+    let node = Node::with_transport("test_node", transport).await.unwrap();
 
     // Test simplified publish method
     let publisher = node.publish::<TestMessage>("simple_topic").await.unwrap();
