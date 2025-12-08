@@ -1,1 +1,0 @@
-searchState.loadedDescShard("zenobuf_macros", 0, "Zenobuf Macros - Procedural macros for the Zenobuf …\nDerives the [<code>zenobuf_core::Message</code>] trait for Protocol …")

@@ -1,1 +1,0 @@
-searchState.loadedDescShard("talker", 0, "Example publisher (talker) for the Zenobuf framework")
