@@ -12,7 +12,7 @@ readme = "../../README.md"
 
 [dependencies]
 zenobuf-core = { path = "../zenobuf-core", version = "0.3.3" }
-zenoh = "1.7.0"
+zenoh = "1.7.2"
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 console = "0.16"
@@ -25,4 +25,4 @@ futures = "0.3"
 chrono = "0.4"
 
 [dev-dependencies]
-prost = "0.14.1"
+prost = "0.14.3"
