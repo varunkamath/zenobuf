@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ListCommands"],"fn":["execute","list_nodes","list_services","list_topics"]};
+window.SIDEBAR_ITEMS = {"enum":["ListCommands"],"fn":["execute","list_by_prefix"]};

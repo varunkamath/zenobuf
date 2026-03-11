@@ -14,12 +14,12 @@
 <a href=#14 id=14 data-nosnippet>14</a>//!
 <a href=#15 id=15 data-nosnippet>15</a>//! ```toml
 <a href=#16 id=16 data-nosnippet>16</a>//! [dependencies]
-<a href=#17 id=17 data-nosnippet>17</a>//! zenobuf-core = "0.2"
-<a href=#18 id=18 data-nosnippet>18</a>//! zenobuf-macros = "0.2"
-<a href=#19 id=19 data-nosnippet>19</a>//! prost = "0.13"
+<a href=#17 id=17 data-nosnippet>17</a>//! zenobuf-core = "0.3"
+<a href=#18 id=18 data-nosnippet>18</a>//! zenobuf-macros = "0.3"
+<a href=#19 id=19 data-nosnippet>19</a>//! prost = "0.14"
 <a href=#20 id=20 data-nosnippet>20</a>//!
 <a href=#21 id=21 data-nosnippet>21</a>//! [build-dependencies]
-<a href=#22 id=22 data-nosnippet>22</a>//! prost-build = "0.13"
+<a href=#22 id=22 data-nosnippet>22</a>//! prost-build = "0.14"
 <a href=#23 id=23 data-nosnippet>23</a>//! ```
 <a href=#24 id=24 data-nosnippet>24</a>//!
 <a href=#25 id=25 data-nosnippet>25</a>//! ### 2. Setup automatic derive in `build.rs`
@@ -155,31 +155,47 @@
 <a href=#155 id=155 data-nosnippet>155</a>/// }
 <a href=#156 id=156 data-nosnippet>156</a>/// ```
 <a href=#157 id=157 data-nosnippet>157</a>///
-<a href=#158 id=158 data-nosnippet>158</a>/// # Generated Implementation
+<a href=#158 id=158 data-nosnippet>158</a>/// # Topic Naming
 <a href=#159 id=159 data-nosnippet>159</a>///
-<a href=#160 id=160 data-nosnippet>160</a>/// The macro generates an implementation like this:
-<a href=#161 id=161 data-nosnippet>161</a>///
-<a href=#162 id=162 data-nosnippet>162</a>/// ```rust,ignore
-<a href=#163 id=163 data-nosnippet>163</a>/// impl zenobuf_core::Message for Point {
-<a href=#164 id=164 data-nosnippet>164</a>///     fn type_name() -&gt; &amp;'static str {
-<a href=#165 id=165 data-nosnippet>165</a>///         "Point"
-<a href=#166 id=166 data-nosnippet>166</a>///     }
-<a href=#167 id=167 data-nosnippet>167</a>/// }
-<a href=#168 id=168 data-nosnippet>168</a>/// ```
-<a href=#169 id=169 data-nosnippet>169</a></span><span class="attr">#[proc_macro_derive(ZenobufMessage)]
-<a href=#170 id=170 data-nosnippet>170</a></span><span class="kw">pub fn </span>derive_zenobuf_message(input: TokenStream) -&gt; TokenStream {
-<a href=#171 id=171 data-nosnippet>171</a>    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input <span class="kw">as </span>DeriveInput);
-<a href=#172 id=172 data-nosnippet>172</a>    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>input.ident;
-<a href=#173 id=173 data-nosnippet>173</a>    <span class="kw">let </span>(impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-<a href=#174 id=174 data-nosnippet>174</a>
-<a href=#175 id=175 data-nosnippet>175</a>    <span class="kw">let </span>expanded = <span class="macro">quote!</span> {
-<a href=#176 id=176 data-nosnippet>176</a>        <span class="kw">impl </span>#impl_generics ::zenobuf_core::Message <span class="kw">for </span>#name #ty_generics #where_clause {
-<a href=#177 id=177 data-nosnippet>177</a>            <span class="kw">fn </span>type_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
-<a href=#178 id=178 data-nosnippet>178</a>                <span class="macro">stringify!</span>(#name)
-<a href=#179 id=179 data-nosnippet>179</a>            }
-<a href=#180 id=180 data-nosnippet>180</a>        }
-<a href=#181 id=181 data-nosnippet>181</a>    };
-<a href=#182 id=182 data-nosnippet>182</a>
-<a href=#183 id=183 data-nosnippet>183</a>    TokenStream::from(expanded)
-<a href=#184 id=184 data-nosnippet>184</a>}
+<a href=#160 id=160 data-nosnippet>160</a>/// When using derived message types with Zenobuf publishers or subscribers, topic names
+<a href=#161 id=161 data-nosnippet>161</a>/// should follow valid Zenoh key-expression conventions. Avoid using Zenoh wildcard
+<a href=#162 id=162 data-nosnippet>162</a>/// characters (`*`, `**`, `$`, `?`) in topic names unless you intend wildcard matching.
+<a href=#163 id=163 data-nosnippet>163</a>/// Stick to alphanumeric characters, `/`, `-`, and `_` for topic and service names.
+<a href=#164 id=164 data-nosnippet>164</a>///
+<a href=#165 id=165 data-nosnippet>165</a>/// # Generated Implementation
+<a href=#166 id=166 data-nosnippet>166</a>///
+<a href=#167 id=167 data-nosnippet>167</a>/// The macro generates an implementation like this:
+<a href=#168 id=168 data-nosnippet>168</a>///
+<a href=#169 id=169 data-nosnippet>169</a>/// ```rust,ignore
+<a href=#170 id=170 data-nosnippet>170</a>/// impl zenobuf_core::Message for Point {
+<a href=#171 id=171 data-nosnippet>171</a>///     fn type_name() -&gt; &amp;'static str {
+<a href=#172 id=172 data-nosnippet>172</a>///         // Returns fully qualified name, e.g. "my_app::proto::Point"
+<a href=#173 id=173 data-nosnippet>173</a>///         concat!(module_path!(), "::", stringify!(Point))
+<a href=#174 id=174 data-nosnippet>174</a>///     }
+<a href=#175 id=175 data-nosnippet>175</a>/// }
+<a href=#176 id=176 data-nosnippet>176</a>/// ```
+<a href=#177 id=177 data-nosnippet>177</a></span><span class="attr">#[proc_macro_derive(ZenobufMessage)]
+<a href=#178 id=178 data-nosnippet>178</a></span><span class="kw">pub fn </span>derive_zenobuf_message(input: TokenStream) -&gt; TokenStream {
+<a href=#179 id=179 data-nosnippet>179</a>    <span class="kw">let </span>input = <span class="macro">parse_macro_input!</span>(input <span class="kw">as </span>DeriveInput);
+<a href=#180 id=180 data-nosnippet>180</a>
+<a href=#181 id=181 data-nosnippet>181</a>    <span class="kw">if </span>!<span class="macro">matches!</span>(input.data, syn::Data::Struct(<span class="kw">_</span>)) {
+<a href=#182 id=182 data-nosnippet>182</a>        <span class="kw">return </span>TokenStream::from(
+<a href=#183 id=183 data-nosnippet>183</a>            syn::Error::new_spanned(<span class="kw-2">&amp;</span>input, <span class="string">"ZenobufMessage can only be derived for structs"</span>)
+<a href=#184 id=184 data-nosnippet>184</a>                .to_compile_error(),
+<a href=#185 id=185 data-nosnippet>185</a>        );
+<a href=#186 id=186 data-nosnippet>186</a>    }
+<a href=#187 id=187 data-nosnippet>187</a>
+<a href=#188 id=188 data-nosnippet>188</a>    <span class="kw">let </span>name = <span class="kw-2">&amp;</span>input.ident;
+<a href=#189 id=189 data-nosnippet>189</a>    <span class="kw">let </span>(impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+<a href=#190 id=190 data-nosnippet>190</a>
+<a href=#191 id=191 data-nosnippet>191</a>    <span class="kw">let </span>expanded = <span class="macro">quote!</span> {
+<a href=#192 id=192 data-nosnippet>192</a>        <span class="kw">impl </span>#impl_generics ::zenobuf_core::Message <span class="kw">for </span>#name #ty_generics #where_clause {
+<a href=#193 id=193 data-nosnippet>193</a>            <span class="kw">fn </span>type_name() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
+<a href=#194 id=194 data-nosnippet>194</a>                <span class="macro">concat!</span>(<span class="macro">module_path!</span>(), <span class="string">"::"</span>, <span class="macro">stringify!</span>(#name))
+<a href=#195 id=195 data-nosnippet>195</a>            }
+<a href=#196 id=196 data-nosnippet>196</a>        }
+<a href=#197 id=197 data-nosnippet>197</a>    };
+<a href=#198 id=198 data-nosnippet>198</a>
+<a href=#199 id=199 data-nosnippet>199</a>    TokenStream::from(expanded)
+<a href=#200 id=200 data-nosnippet>200</a>}
 </code></pre></div></section></main></body></html>

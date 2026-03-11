@@ -12,13 +12,13 @@ parameter system, similar to ROS (Robot Operating System) but with a more Rust-i
 <li><strong>Zenoh Transport</strong>: Efficient pub/sub and query/reply using Zenoh</li>
 </ul>
 <h3 id="quick-start"><a class="doc-anchor" href="#quick-start">§</a>Quick Start</h3><h4 id="1-add-dependencies"><a class="doc-anchor" href="#1-add-dependencies">§</a>1. Add Dependencies</h4><div class="example-wrap"><pre class="language-toml"><code>[dependencies]
-zenobuf-core = &quot;0.2&quot;
-zenobuf-macros = &quot;0.2&quot;
-prost = &quot;0.13&quot;
+zenobuf-core = &quot;0.3&quot;
+zenobuf-macros = &quot;0.3&quot;
+prost = &quot;0.14&quot;
 tokio = { version = &quot;1&quot;, features = [&quot;full&quot;] }
 
 [build-dependencies]
-prost-build = &quot;0.13&quot;</code></pre></div><h4 id="2-define-messages-with-protocol-buffers"><a class="doc-anchor" href="#2-define-messages-with-protocol-buffers">§</a>2. Define Messages with Protocol Buffers</h4>
+prost-build = &quot;0.14&quot;</code></pre></div><h4 id="2-define-messages-with-protocol-buffers"><a class="doc-anchor" href="#2-define-messages-with-protocol-buffers">§</a>2. Define Messages with Protocol Buffers</h4>
 <p>Create <code>protos/messages.proto</code>:</p>
 <div class="example-wrap"><pre class="language-protobuf"><code>syntax = &quot;proto3&quot;;
 
