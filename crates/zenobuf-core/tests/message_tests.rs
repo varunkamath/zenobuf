@@ -18,6 +18,7 @@ impl ProstMessage for TestMessage {
     fn decode(buf: impl prost::bytes::Buf) -> Result<Self, prost::DecodeError> {
         let mut buf = buf;
         if buf.remaining() < 4 {
+            #[allow(deprecated)]
             return Err(prost::DecodeError::new("Buffer too short"));
         }
 

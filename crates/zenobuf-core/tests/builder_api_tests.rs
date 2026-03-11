@@ -29,6 +29,7 @@ impl ProstMessage for TestMessage {
     fn decode(buf: impl prost::bytes::Buf) -> std::result::Result<Self, prost::DecodeError> {
         let mut buf = buf;
         if buf.remaining() < 8 {
+            #[allow(deprecated)]
             return Err(prost::DecodeError::new("Buffer too short"));
         }
 
@@ -40,6 +41,7 @@ impl ProstMessage for TestMessage {
         let text_len = u32::from_le_bytes(bytes) as usize;
 
         if buf.remaining() < text_len {
+            #[allow(deprecated)]
             return Err(prost::DecodeError::new("Buffer too short for text"));
         }
 
@@ -103,6 +105,7 @@ impl ProstMessage for AddRequest {
     fn decode(buf: impl prost::bytes::Buf) -> std::result::Result<Self, prost::DecodeError> {
         let mut buf = buf;
         if buf.remaining() < 8 {
+            #[allow(deprecated)]
             return Err(prost::DecodeError::new("Buffer too short"));
         }
 
@@ -167,6 +170,7 @@ impl ProstMessage for AddResponse {
     fn decode(buf: impl prost::bytes::Buf) -> std::result::Result<Self, prost::DecodeError> {
         let mut buf = buf;
         if buf.remaining() < 4 {
+            #[allow(deprecated)]
             return Err(prost::DecodeError::new("Buffer too short"));
         }
 
