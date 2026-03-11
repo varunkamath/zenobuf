@@ -375,7 +375,12 @@ impl Node {
     {
         let full_service_name = service_name.to_string();
 
-        if self.services.lock().unwrap().contains_key(&full_service_name) {
+        if self
+            .services
+            .lock()
+            .unwrap()
+            .contains_key(&full_service_name)
+        {
             return Err(Error::service_already_exists(
                 &full_service_name,
                 &self.name,

@@ -151,9 +151,8 @@ impl<M: Message> Publisher<M> for ZenohPublisher<M> {
     fn publish(&self, message: &M) -> Result<()> {
         let bytes = encode_message(message)?;
         tokio::task::block_in_place(|| {
-            tokio::runtime::Handle::current().block_on(async {
-                self.publisher.put(bytes).await.map_err(Error::from)
-            })
+            tokio::runtime::Handle::current()
+                .block_on(async { self.publisher.put(bytes).await.map_err(Error::from) })
         })
     }
 }
