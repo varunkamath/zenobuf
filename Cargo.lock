@@ -3972,7 +3972,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-cli"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "chrono",
  "clap",
@@ -3990,7 +3990,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-core"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4008,7 +4008,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-examples"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "prost",
  "prost-build",
@@ -4023,7 +4023,7 @@ dependencies = [
 
 [[package]]
 name = "zenobuf-macros"
-version = "0.3.3"
+version = "0.3.4"
 dependencies = [
  "proc-macro2",
  "prost",
