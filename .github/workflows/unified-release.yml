@@ -32,10 +32,12 @@ env:
   SCCACHE_CACHE_SIZE: 2G
 
 permissions:
-  contents: write
-  packages: write
+  contents: read
 
 jobs:
+  # CI jobs (fmt, clippy, audit, license-check, test) run here for main/dev branches.
+  # Feature branches use ci.yml instead, which has the same checks without release steps.
+
   # Check code formatting
   fmt:
     name: Rustfmt
@@ -138,6 +140,8 @@ jobs:
     needs: [fmt, clippy, audit, license-check, test]
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push' && contains(github.event.head_commit.message, 'Merge pull request')) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       new_version: ${{ env.NEW_VERSION }}
       is_dry_run: ${{ github.event.inputs.dry_run || 'false' }}
@@ -205,6 +209,9 @@ jobs:
           find crates -name "Cargo.toml" -exec cargo set-version ${{ env.NEW_VERSION }} --manifest-path {} \;
           # Update version in root Cargo.toml
           cargo set-version ${{ env.NEW_VERSION }}
+          # Update inter-crate dependency versions
+          find crates -name "Cargo.toml" -exec sed -i "s/zenobuf-core = { path = \"..\/zenobuf-core\", version = \"[^\"]*\"/zenobuf-core = { path = \"..\/zenobuf-core\", version = \"${{ env.NEW_VERSION }}\"/g" {} \;
+          find crates -name "Cargo.toml" -exec sed -i "s/zenobuf-macros = { path = \"..\/zenobuf-macros\", version = \"[^\"]*\"/zenobuf-macros = { path = \"..\/zenobuf-macros\", version = \"${{ env.NEW_VERSION }}\"/g" {} \;
 
       - name: Generate Changelog
         run: git-cliff --unreleased --tag v${{ env.NEW_VERSION }} > CHANGELOG.md
@@ -216,6 +223,8 @@ jobs:
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add CHANGELOG.md
           find crates -name "Cargo.toml" -exec git add {} \;
+          git add Cargo.toml
+          git add Cargo.lock
           git commit -m "chore(release): prepare for v${{ env.NEW_VERSION }}"
           git tag -a "v${{ env.NEW_VERSION }}" -m "Release v${{ env.NEW_VERSION }}"
           git push

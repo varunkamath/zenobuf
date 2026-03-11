@@ -17,6 +17,8 @@ pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
 ///
 /// This trait defines the interface that all transport implementations must provide.
 /// It allows for pluggable transport layers while maintaining a consistent API.
+// TODO: Not yet wired into Node — Node currently uses ZenohTransport directly.
+// Refactor Node to accept a generic Transport to enable pluggable backends.
 #[async_trait::async_trait]
 pub trait Transport: Send + Sync + 'static {
     /// Create a publisher for the given topic

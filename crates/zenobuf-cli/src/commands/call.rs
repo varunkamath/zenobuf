@@ -46,7 +46,7 @@ pub async fn execute(args: CallArgs) -> Result<()> {
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full service path
-    let service_path = format!("zenobuf/service/{service}", service = args.service);
+    let service_path = format!("zenobuf/service/{}", args.service);
     let key_expr = KeyExpr::try_from(service_path)?;
 
     // Serialize the request data
@@ -84,14 +84,14 @@ pub async fn execute(args: CallArgs) -> Result<()> {
                     }
                 }
                 Err(e) => {
-                    println!("\n{}", style("Error:").bold().red());
-                    println!("  {e}");
+                    eprintln!("\n{}", style("Error:").bold().red());
+                    eprintln!("  {e}");
                 }
             }
         }
         Err(e) => {
-            println!("\n{}", style("Error:").bold().red());
-            println!("  {e}");
+            eprintln!("\n{}", style("Error:").bold().red());
+            eprintln!("  {e}");
         }
     }
 

@@ -19,13 +19,13 @@
 //!
 //! ```toml
 //! [dependencies]
-//! zenobuf-core = "0.2"
-//! zenobuf-macros = "0.2"
-//! prost = "0.13"
+//! zenobuf-core = "0.3"
+//! zenobuf-macros = "0.3"
+//! prost = "0.14"
 //! tokio = { version = "1", features = ["full"] }
 //!
 //! [build-dependencies]
-//! prost-build = "0.13"
+//! prost-build = "0.14"
 //! ```
 //!
 //! ### 2. Define Messages with Protocol Buffers

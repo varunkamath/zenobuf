@@ -15,8 +15,8 @@ This is a simple starter template for using Zenobuf with your own protobuf defin
 
    ```toml
    [dependencies]
-   zenobuf-core = "0.2"
-   zenobuf-macros = "0.2"
+   zenobuf-core = "0.3"
+   zenobuf-macros = "0.3"
    ```
 
 3. **Run the example:**

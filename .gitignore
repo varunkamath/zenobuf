@@ -111,3 +111,7 @@ TODO.md
 test_data/
 .augmentignore
 implementation_plan.md
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

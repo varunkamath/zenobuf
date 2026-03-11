@@ -4,7 +4,6 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 use std::time::Duration;
 
-use futures::future::BoxFuture;
 use zenoh::qos::{CongestionControl, Priority};
 use zenoh::{self, key_expr::KeyExpr};
 
@@ -13,8 +12,7 @@ use crate::executor::CallbackExecutor;
 use crate::message::{decode_message, encode_message, Message};
 use crate::qos::{QosProfile, Reliability};
 
-use super::{Client, Publisher, Service, Subscriber, Transport};
-use async_trait::async_trait;
+use super::{BoxFuture, Client, Publisher, Service, Subscriber};
 
 /// Zenoh transport implementation
 pub struct ZenohTransport {
@@ -56,32 +54,18 @@ impl ZenohTransport {
         }
     }
 
-    /// Maps Zenobuf QoS depth to Zenoh Priority
-    fn map_priority(qos: &QosProfile) -> Priority {
-        match qos.depth {
-            0..=1 => Priority::RealTime,
-            2..=5 => Priority::InteractiveHigh,
-            6..=10 => Priority::InteractiveLow,
-            _ => Priority::Data,
-        }
-    }
-
     /// Creates a publisher for the given topic with QoS settings
     pub async fn create_publisher<M: Message>(
         &self,
         topic: &str,
         qos: &QosProfile,
     ) -> Result<ZenohPublisher<M>> {
-        let prefixed_topic = format!(
-            "{prefix}{topic}",
-            prefix = Self::TOPIC_PREFIX,
-            topic = topic
-        );
+        let prefixed_topic = format!("{}{topic}", Self::TOPIC_PREFIX);
         ZenohPublisher::new(
             self.session.clone(),
             prefixed_topic,
             Self::map_reliability(qos),
-            Self::map_priority(qos),
+            Priority::Data,
         )
         .await
     }
@@ -96,11 +80,7 @@ impl ZenohTransport {
     where
         F: Fn(M) + Send + Sync + 'static,
     {
-        let prefixed_topic = format!(
-            "{prefix}{topic}",
-            prefix = Self::TOPIC_PREFIX,
-            topic = topic
-        );
+        let prefixed_topic = format!("{}{topic}", Self::TOPIC_PREFIX);
         ZenohSubscriber::new(self.session.clone(), &prefixed_topic, callback, executor).await
     }
 
@@ -113,11 +93,7 @@ impl ZenohTransport {
     where
         F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
     {
-        let prefixed_service_name = format!(
-            "{prefix}{service_name}",
-            prefix = Self::SERVICE_PREFIX,
-            service_name = service_name
-        );
+        let prefixed_service_name = format!("{}{service_name}", Self::SERVICE_PREFIX);
         ZenohService::new(self.session.clone(), &prefixed_service_name, handler).await
     }
 
@@ -126,11 +102,7 @@ impl ZenohTransport {
         &self,
         service_name: &str,
     ) -> Result<ZenohClient<Req, Res>> {
-        let prefixed_service_name = format!(
-            "{prefix}{service_name}",
-            prefix = Self::SERVICE_PREFIX,
-            service_name = service_name
-        );
+        let prefixed_service_name = format!("{}{service_name}", Self::SERVICE_PREFIX);
         Ok(ZenohClient::new(
             self.session.clone(),
             &prefixed_service_name,
@@ -152,9 +124,8 @@ impl<M: Message> ZenohPublisher<M> {
         congestion_control: CongestionControl,
         priority: Priority,
     ) -> Result<Self> {
-        let topic_clone = topic.clone();
         let key_expr = KeyExpr::try_from(topic.clone())
-            .map_err(|e| Error::publisher(topic_clone, e.to_string()))?;
+            .map_err(|e| Error::publisher(&topic, e.to_string()))?;
         let publisher = session
             .declare_publisher(key_expr)
             .congestion_control(congestion_control)
@@ -178,17 +149,13 @@ impl<M: Message> ZenohPublisher<M> {
 
 impl<M: Message> Publisher<M> for ZenohPublisher<M> {
     fn publish(&self, message: &M) -> Result<()> {
-        let bytes = encode_message(message);
-        // Use futures::executor::block_on instead of creating a new Tokio runtime
-        // This works in both async and sync contexts
-        futures::executor::block_on(async {
-            self.publisher.put(bytes).await.map_err(Error::from)
-        })?;
-        Ok(())
+        let bytes = encode_message(message)?;
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.publisher.put(bytes).await.map_err(Error::from)
+            })
+        })
     }
-
-    // TODO: Consider adding an explicit async version of this method in the future
-    // for better ergonomics in async contexts
 }
 
 /// Zenoh subscriber implementation
@@ -220,14 +187,17 @@ impl ZenohSubscriber {
             .declare_subscriber(key_expr)
             .callback(move |sample| {
                 let bytes = sample.payload().to_bytes();
-                if let Ok(message) = decode_message::<M>(bytes.as_ref()) {
-                    if let Some(ref exec) = executor {
-                        // Queue callback for processing by spin()
-                        let cb = callback.clone();
-                        exec.enqueue(Box::new(move || cb(message)));
-                    } else {
-                        // Execute callback directly (legacy behavior)
-                        callback(message);
+                match decode_message::<M>(bytes.as_ref()) {
+                    Ok(message) => {
+                        if let Some(ref exec) = executor {
+                            let cb = callback.clone();
+                            exec.enqueue(Box::new(move || cb(message)));
+                        } else {
+                            callback(message);
+                        }
+                    }
+                    Err(e) => {
+                        tracing::warn!("Failed to decode subscriber message: {}", e);
                     }
                 }
             })
@@ -250,6 +220,7 @@ impl Subscriber for ZenohSubscriber {
 /// Zenoh service implementation
 pub struct ZenohService {
     _queryable: zenoh::query::Queryable<zenoh::handlers::FifoChannelHandler<zenoh::query::Query>>,
+    _task: tokio::task::JoinHandle<()>,
 }
 
 impl ZenohService {
@@ -273,52 +244,70 @@ impl ZenohService {
         // Clone the queryable for the task
         let queryable_clone = queryable.clone();
 
-        // Spawn a task to handle queries
-        tokio::spawn(async move {
+        let task = tokio::spawn(async move {
             while let Ok(query) = queryable_clone.recv_async().await {
                 tracing::info!("Received query on: {}", query.key_expr());
-                if let Some(payload) = query.payload() {
-                    tracing::info!("Query has payload");
-                    if let Ok(request) = decode_message::<Req>(payload.to_bytes().as_ref()) {
-                        tracing::info!("Decoded request successfully");
-                        match handler(request) {
-                            Ok(response) => {
-                                tracing::info!("Handler returned response");
-                                let bytes = encode_message(&response);
-                                // Send the reply immediately
-                                match query.reply(query.key_expr(), bytes).await {
-                                    Ok(_) => tracing::info!("Reply sent successfully"),
-                                    Err(e) => tracing::error!("Failed to send reply: {}", e),
-                                }
-                            }
-                            Err(e) => {
-                                tracing::error!("Service handler error: {}", e);
-                                // Try to send an error reply
-                                let _ = query
-                                    .reply_err(format!("Service error: {e}").as_bytes().to_vec())
-                                    .await;
-                            }
-                        }
-                    } else {
-                        tracing::error!("Failed to decode request");
-                        // Send an error reply for decoding failure
-                        let _ = query
-                            .reply_err("Failed to decode request".as_bytes().to_vec())
-                            .await;
-                    }
-                } else {
+
+                let Some(payload) = query.payload() else {
                     tracing::error!("Query has no payload");
-                    // Send an error reply for missing payload
                     let _ = query
                         .reply_err("Query has no payload".as_bytes().to_vec())
                         .await;
+                    continue;
+                };
+
+                let request = match decode_message::<Req>(payload.to_bytes().as_ref()) {
+                    Ok(req) => req,
+                    Err(_) => {
+                        tracing::error!("Failed to decode request");
+                        let _ = query
+                            .reply_err("Failed to decode request".as_bytes().to_vec())
+                            .await;
+                        continue;
+                    }
+                };
+
+                tracing::info!("Decoded request successfully");
+                let response = match handler(request) {
+                    Ok(res) => res,
+                    Err(e) => {
+                        tracing::error!("Service handler error: {}", e);
+                        let _ = query
+                            .reply_err(format!("Service error: {e}").as_bytes().to_vec())
+                            .await;
+                        continue;
+                    }
+                };
+
+                tracing::info!("Handler returned response");
+                let bytes = match encode_message(&response) {
+                    Ok(b) => b,
+                    Err(e) => {
+                        tracing::error!("Failed to encode response: {}", e);
+                        let _ = query
+                            .reply_err(format!("Encode error: {e}").as_bytes().to_vec())
+                            .await;
+                        continue;
+                    }
+                };
+
+                match query.reply(query.key_expr(), bytes).await {
+                    Ok(_) => tracing::info!("Reply sent successfully"),
+                    Err(e) => tracing::error!("Failed to send reply: {}", e),
                 }
             }
         });
 
         Ok(Self {
             _queryable: queryable,
+            _task: task,
         })
+    }
+}
+
+impl Drop for ZenohService {
+    fn drop(&mut self) {
+        self._task.abort();
     }
 }
 
@@ -349,100 +338,8 @@ impl<Req: Message, Res: Message> ZenohClient<Req, Res> {
 
 impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
     fn call(&self, request: &Req) -> Result<Res> {
-        // Use futures::executor::block_on instead of creating a new Tokio runtime
-        // This works in both async and sync contexts
-        futures::executor::block_on(async {
-            tracing::info!("Calling service: {}", self.service_name);
-            let service_name_clone = self.service_name.clone();
-            let key_expr = KeyExpr::try_from(self.service_name.clone())
-                .map_err(|e| Error::client(service_name_clone, e.to_string()))?;
-
-            let bytes = encode_message(request);
-            let selector = key_expr.clone();
-            tracing::info!("Sending request to: {}", selector);
-
-            // Implement retry mechanism with exponential backoff
-            let max_retries = 3;
-            let mut retry_count = 0;
-            let mut last_error = None;
-            let base_delay = Duration::from_millis(100);
-
-            while retry_count < max_retries {
-                // Make a request with a timeout
-                match self
-                    .session
-                    .get(selector.clone())
-                    .payload(bytes.clone())
-                    .timeout(Duration::from_secs(10)) // Use a reasonable timeout
-                    .await
-                {
-                    Ok(reply) => {
-                        tracing::info!("Got reply, waiting for data");
-
-                        // Keep the reply object alive until we've received the response
-                        match reply.recv_async().await {
-                            Ok(sample) => match sample.result() {
-                                Ok(sample) => {
-                                    tracing::info!("Sample is OK");
-                                    let payload_data = sample.payload();
-                                    tracing::info!("Got payload data");
-                                    match decode_message::<Res>(payload_data.to_bytes().as_ref()) {
-                                        Ok(response) => {
-                                            tracing::info!("Decoded response successfully");
-                                            return Ok(response);
-                                        }
-                                        Err(e) => {
-                                            tracing::error!("Failed to decode response: {}", e);
-                                            last_error = Some(e);
-                                        }
-                                    }
-                                }
-                                Err(e) => {
-                                    tracing::error!("Sample error: {}", e);
-                                    last_error = Some(Error::service_call_failed(
-                                        self.service_name.clone(),
-                                        format!("Error in response: {e}"),
-                                    ));
-                                }
-                            },
-                            Err(e) => {
-                                tracing::error!("Receive error: {}", e);
-                                last_error = Some(Error::service_call_failed(
-                                    self.service_name.clone(),
-                                    format!("No response: {e}"),
-                                ));
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        tracing::error!("Error getting reply: {}", e);
-                        last_error = Some(Error::from(e));
-                    }
-                }
-
-                // Increment retry count and wait before retrying
-                retry_count += 1;
-                if retry_count < max_retries {
-                    tracing::info!(
-                        "Retrying service call (attempt {}/{})",
-                        retry_count + 1,
-                        max_retries
-                    );
-                    // Use exponential backoff
-                    let backoff = base_delay * 2u32.pow(retry_count as u32);
-                    tracing::info!("Waiting for {:?} before retry", backoff);
-                    tokio::time::sleep(backoff).await;
-                }
-            }
-
-            // If we've exhausted all retries, return the last error
-            match last_error {
-                Some(e) => Err(e),
-                None => Err(Error::service_call_failed(
-                    self.service_name.clone(),
-                    "Service call failed after retries",
-                )),
-            }
+        tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(self.call_async(request))
         })
     }
 
@@ -451,13 +348,11 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
         let session = self.session.clone();
 
         Box::pin(async move {
-            let service_name_clone = service_name.clone();
             let key_expr = KeyExpr::try_from(service_name.clone())
-                .map_err(|e| Error::client(service_name_clone, e.to_string()))?;
+                .map_err(|e| Error::client(&service_name, e.to_string()))?;
 
-            let bytes = encode_message(request);
-            let selector = key_expr.clone();
-            tracing::info!("Sending request to: {}", selector);
+            let bytes = encode_message(request)?;
+            tracing::info!("Sending request to: {}", key_expr);
 
             // Implement retry mechanism with exponential backoff
             let max_retries = 3;
@@ -468,7 +363,7 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
             while retry_count < max_retries {
                 // Make a request with a timeout
                 match session
-                    .get(selector.clone())
+                    .get(key_expr.clone())
                     .payload(bytes.clone())
                     .timeout(Duration::from_secs(10)) // Use a reasonable timeout
                     .await
@@ -532,79 +427,9 @@ impl<Req: Message, Res: Message> Client<Req, Res> for ZenohClient<Req, Res> {
                 }
             }
 
-            // If we've exhausted all retries, return the last error
-            match last_error {
-                Some(e) => Err(e),
-                None => Err(Error::service_call_failed(
-                    service_name.clone(),
-                    "Service call failed after retries",
-                )),
-            }
+            Err(last_error.unwrap_or_else(|| {
+                Error::service_call_failed(&service_name, "Service call failed after retries")
+            }))
         })
-    }
-}
-
-// Implement the Transport trait for ZenohTransport
-#[async_trait]
-impl Transport for ZenohTransport {
-    async fn create_publisher<M: Message>(
-        &self,
-        topic: &str,
-    ) -> Result<Arc<crate::publisher::Publisher<M>>> {
-        // Transport trait doesn't have access to QoS, use defaults
-        let zenoh_publisher = ZenohPublisher::new(
-            self.session.clone(),
-            topic.to_string(),
-            CongestionControl::Block, // Default: reliable
-            Priority::Data,           // Default: normal priority
-        )
-        .await?;
-        Ok(Arc::new(crate::publisher::Publisher::new(
-            topic.to_string(),
-            Box::new(zenoh_publisher),
-        )))
-    }
-
-    async fn create_subscriber<M: Message, F>(
-        &self,
-        topic: &str,
-        callback: F,
-    ) -> Result<Arc<crate::subscriber::Subscriber>>
-    where
-        F: Fn(M) + Send + Sync + 'static,
-    {
-        // Transport trait doesn't have access to executor, use direct callback mode
-        let zenoh_subscriber =
-            ZenohSubscriber::new(self.session.clone(), topic, callback, None).await?;
-        Ok(Arc::new(crate::subscriber::Subscriber::new(
-            topic.to_string(),
-            Box::new(zenoh_subscriber),
-        )))
-    }
-
-    async fn create_service<Req: Message, Res: Message, F>(
-        &self,
-        service_name: &str,
-        handler: F,
-    ) -> Result<Arc<crate::service::Service>>
-    where
-        F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
-    {
-        let zenoh_service = ZenohService::new(self.session.clone(), service_name, handler).await?;
-        Ok(Arc::new(crate::service::Service::new(
-            service_name.to_string(),
-            Box::new(zenoh_service),
-        )))
-    }
-
-    fn create_client<Req: Message, Res: Message>(
-        &self,
-        service_name: &str,
-    ) -> Result<Arc<crate::client::Client<Req, Res>>> {
-        let zenoh_client = ZenohClient::new(self.session.clone(), service_name);
-        Ok(Arc::new(crate::client::Client::new(
-            service_name.to_string(),
-            Box::new(zenoh_client),
-        )))
     }
 }

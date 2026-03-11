@@ -1,7 +1,7 @@
 //! Parameter system for Zenobuf
 
 use std::any::Any;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -13,10 +13,8 @@ use crate::error::{Error, Result};
 pub struct Parameter {
     /// Name of the parameter
     name: String,
-    /// Value of the parameter
-    value: Arc<Mutex<Box<dyn Any + Send + Sync>>>,
-    /// Serialized value of the parameter
-    serialized: Arc<Mutex<String>>,
+    /// Value and its serialized form, kept in sync under a single lock
+    inner: Mutex<(Box<dyn Any + Send + Sync>, String)>,
 }
 
 impl Parameter {
@@ -30,8 +28,7 @@ impl Parameter {
 
         Ok(Self {
             name: name.to_string(),
-            value: Arc::new(Mutex::new(Box::new(value))),
-            serialized: Arc::new(Mutex::new(serialized)),
+            inner: Mutex::new((Box::new(value), serialized)),
         })
     }
 
@@ -42,7 +39,8 @@ impl Parameter {
 
     /// Returns the value of the parameter
     pub fn get_value<T: DeserializeOwned + Clone + Send + Sync + 'static>(&self) -> Result<T> {
-        let value = self.value.lock().unwrap();
+        let guard = self.inner.lock().unwrap();
+        let (ref value, ref serialized) = *guard;
 
         // Try to downcast the value
         if let Some(typed_value) = value.downcast_ref::<T>() {
@@ -50,8 +48,7 @@ impl Parameter {
         }
 
         // If downcasting fails, try to deserialize from the serialized value
-        let serialized = self.serialized.lock().unwrap();
-        let deserialized = serde_json::from_str::<T>(&serialized)
+        let deserialized = serde_json::from_str::<T>(serialized)
             .map_err(|e| Error::parameter(&self.name, format!("Failed to deserialize: {e}")))?;
 
         Ok(deserialized)
@@ -65,8 +62,8 @@ impl Parameter {
         let serialized = serde_json::to_string(&value)
             .map_err(|e| Error::parameter(&self.name, format!("Failed to serialize: {e}")))?;
 
-        *self.value.lock().unwrap() = Box::new(value);
-        *self.serialized.lock().unwrap() = serialized;
+        let mut guard = self.inner.lock().unwrap();
+        *guard = (Box::new(value), serialized);
 
         Ok(())
     }

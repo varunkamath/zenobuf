@@ -18,6 +18,7 @@ pub type Callback = Box<dyn FnOnce() + Send>;
 pub struct CallbackExecutor {
     callbacks: Arc<Mutex<VecDeque<Callback>>>,
     shutdown: Arc<AtomicBool>,
+    notify: Arc<tokio::sync::Notify>,
 }
 
 impl Default for CallbackExecutor {
@@ -32,6 +33,7 @@ impl CallbackExecutor {
         Self {
             callbacks: Arc::new(Mutex::new(VecDeque::new())),
             shutdown: Arc::new(AtomicBool::new(false)),
+            notify: Arc::new(tokio::sync::Notify::new()),
         }
     }
 
@@ -41,6 +43,7 @@ impl CallbackExecutor {
     pub fn enqueue(&self, callback: Callback) {
         if !self.is_shutdown() {
             self.callbacks.lock().unwrap().push_back(callback);
+            self.notify.notify_one();
         }
     }
 
@@ -48,18 +51,14 @@ impl CallbackExecutor {
     ///
     /// Returns the number of callbacks that were processed.
     pub fn process_pending(&self) -> usize {
-        let mut count = 0;
-
-        // Drain all callbacks while holding the lock briefly
         let callbacks: Vec<Callback> = {
             let mut queue = self.callbacks.lock().unwrap();
             queue.drain(..).collect()
         };
 
-        // Execute callbacks outside the lock
+        let count = callbacks.len();
         for callback in callbacks {
             callback();
-            count += 1;
         }
 
         count
@@ -70,11 +69,18 @@ impl CallbackExecutor {
         self.callbacks.lock().unwrap().len()
     }
 
+    /// Returns a future that resolves when a callback is enqueued or shutdown is signaled.
+    /// Must be called (to register interest) before draining the queue.
+    pub fn notified(&self) -> tokio::sync::futures::Notified<'_> {
+        self.notify.notified()
+    }
+
     /// Signals the executor to shutdown
     ///
     /// After shutdown, no new callbacks will be accepted.
     pub fn shutdown(&self) {
         self.shutdown.store(true, Ordering::SeqCst);
+        self.notify.notify_one();
     }
 
     /// Returns true if the executor has been shutdown

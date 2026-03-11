@@ -5,7 +5,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.3.2"
+version = "0.3.3"
 edition = "2021"
 authors = ["Varun Kamath"]
 description = "A simple ROS-like framework using Zenoh in Rust"

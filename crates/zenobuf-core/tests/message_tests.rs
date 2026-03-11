@@ -64,7 +64,7 @@ fn test_message_encode_decode() {
     let message = TestMessage { value: 42 };
 
     // Encode the message
-    let bytes = encode_message(&message);
+    let bytes = encode_message(&message).unwrap();
 
     // Decode the message
     let decoded = decode_message::<TestMessage>(&bytes).unwrap();

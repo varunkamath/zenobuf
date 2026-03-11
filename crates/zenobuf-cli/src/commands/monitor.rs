@@ -23,6 +23,10 @@ pub struct MonitorArgs {
     /// Format output as JSON
     #[clap(short, long)]
     json: bool,
+
+    /// Exit after this many seconds
+    #[clap(short = 'T', long)]
+    timeout: Option<u64>,
 }
 
 /// Executes the monitor command
@@ -38,7 +42,7 @@ pub async fn execute(args: MonitorArgs) -> Result<()> {
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full topic path
-    let topic_path = format!("zenobuf/topic/{topic}", topic = args.topic);
+    let topic_path = format!("zenobuf/topic/{}", args.topic);
     let key_expr = KeyExpr::try_from(topic_path)?;
 
     // Subscribe to the topic
@@ -51,45 +55,44 @@ pub async fn execute(args: MonitorArgs) -> Result<()> {
     let interrupt = signal::ctrl_c();
     pin!(interrupt);
 
-    // Process messages until Ctrl+C is pressed
+    // Optional timeout: sleep for the given duration, or pend forever if unset
+    let timeout_fut = async {
+        match args.timeout {
+            Some(secs) => tokio::time::sleep(std::time::Duration::from_secs(secs)).await,
+            None => std::future::pending().await,
+        }
+    };
+    pin!(timeout_fut);
+
+    // Process messages until Ctrl+C or timeout
     loop {
         tokio::select! {
             _ = &mut interrupt => {
                 println!("\nMonitoring stopped");
                 break;
             }
+            _ = &mut timeout_fut => {
+                println!("\nMonitoring timed out");
+                break;
+            }
             sample = stream.next() => {
                 if let Some(sample) = sample {
-                    let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f");
-
-                    // Get the payload as bytes
                     let payload = sample.payload().to_bytes();
 
-                    if args.json {
-                        // Try to parse as JSON
-                        if let Ok(json) = serde_json::from_slice::<Value>(&payload) {
-                            if args.timestamps {
-                                println!("{timestamp} {json}", timestamp = timestamp, json = serde_json::to_string_pretty(&json)?);
-                            } else {
-                                println!("{}", serde_json::to_string_pretty(&json)?);
-                            }
-                        } else {
-                            // If not JSON, print as string
-                            let payload_str = String::from_utf8_lossy(&payload);
-                            if args.timestamps {
-                                println!("{timestamp} {payload_str}");
-                            } else {
-                                println!("{payload_str}");
-                            }
-                        }
+                    let display = if args.json {
+                        serde_json::from_slice::<Value>(&payload)
+                            .ok()
+                            .and_then(|json| serde_json::to_string_pretty(&json).ok())
+                            .unwrap_or_else(|| String::from_utf8_lossy(&payload).into_owned())
                     } else {
-                        // Print as string
-                        let payload_str = String::from_utf8_lossy(&payload);
-                        if args.timestamps {
-                            println!("{timestamp} {payload_str}");
-                        } else {
-                            println!("{payload_str}");
-                        }
+                        String::from_utf8_lossy(&payload).into_owned()
+                    };
+
+                    if args.timestamps {
+                        let timestamp = chrono::Local::now().format("%Y-%m-%d %H:%M:%S%.3f");
+                        println!("{timestamp} {display}");
+                    } else {
+                        println!("{display}");
                     }
                 }
             }

@@ -1,3 +1,5 @@
+# CI for feature branches. Main/dev branches use unified-release.yml which
+# includes the same checks plus release steps.
 name: CI
 
 on:

@@ -1,4 +1,8 @@
 //! Parameter command for the Zenobuf CLI
+//!
+//! NOTE: Parameter get/set/list commands query `zenobuf/param/{name}` via Zenoh.
+//! This requires the target Node to have parameter queryables registered.
+//! Node-side parameter queryable support is a TODO in zenobuf-core.
 
 use clap::{Args, Subcommand};
 use console::style;
@@ -56,7 +60,7 @@ async fn get_param(args: GetArgs) -> Result<()> {
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full parameter path
-    let param_path = format!("zenobuf/param/{name}", name = args.name);
+    let param_path = format!("zenobuf/param/{}", args.name);
     let key_expr = KeyExpr::try_from(param_path)?;
 
     // Query for the parameter
@@ -86,12 +90,12 @@ async fn get_param(args: GetArgs) -> Result<()> {
                     }
                 }
                 Err(_) => {
-                    println!("  Parameter not found");
+                    eprintln!("  Parameter not found");
                 }
             }
         }
         Err(_) => {
-            println!("  Parameter not found");
+            eprintln!("  Parameter not found");
         }
     }
 
@@ -114,7 +118,7 @@ async fn set_param(args: SetArgs) -> Result<()> {
     let session = zenoh::open(zenoh::config::Config::default()).await?;
 
     // Create the full parameter path
-    let param_path = format!("zenobuf/param/{name}", name = args.name);
+    let param_path = format!("zenobuf/param/{}", args.name);
     let key_expr = KeyExpr::try_from(param_path)?;
 
     // Serialize the value

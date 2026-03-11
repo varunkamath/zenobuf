@@ -107,52 +107,8 @@ pub enum Error {
     /// Other errors
     #[error("Error: {reason}")]
     Other { reason: String },
-
-    // Legacy string-based errors for backward compatibility
-    #[error("Node already exists: {0}")]
-    NodeAlreadyExistsLegacy(String),
-
-    #[error("Topic already exists: {0}")]
-    TopicAlreadyExistsLegacy(String),
-
-    #[error("Service already exists: {0}")]
-    ServiceAlreadyExistsLegacy(String),
-
-    #[error("Service call timed out: {0}")]
-    ServiceCallTimeoutLegacy(String),
-
-    #[error("Service call failed: {0}")]
-    ServiceCallFailedLegacy(String),
-
-    #[error("Parameter error: {0}")]
-    ParameterLegacy(String),
-
-    #[error("Node error: {0}")]
-    NodeLegacy(String),
-
-    #[error("Publisher error: {0}")]
-    PublisherLegacy(String),
-
-    #[error("Subscriber error: {0}")]
-    SubscriberLegacy(String),
-
-    #[error("Service error: {0}")]
-    ServiceLegacy(String),
-
-    #[error("Client error: {0}")]
-    ClientLegacy(String),
-
-    #[error("Operation not supported: {0}")]
-    NotSupportedLegacy(String),
-
-    #[error("Operation not implemented: {0}")]
-    NotImplementedLegacy(String),
-
-    #[error("Other error: {0}")]
-    OtherLegacy(String),
 }
 
-// Legacy From implementations for backward compatibility
 impl From<zenoh::Error> for Error {
     fn from(err: zenoh::Error) -> Self {
         Error::Transport {

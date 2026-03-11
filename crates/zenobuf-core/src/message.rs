@@ -1,6 +1,5 @@
 //! Message trait and utilities for working with Protocol Buffer messages
 
-// No imports needed
 use prost::Message as ProstMessage;
 
 use crate::error::{Error, Result};
@@ -28,10 +27,10 @@ pub trait Message: ProstMessage + Default + Clone + Send + Sync + 'static {
 }
 
 /// Helper function to encode a message to a byte vector
-pub fn encode_message<M: Message>(message: &M) -> Vec<u8> {
+pub fn encode_message<M: Message>(message: &M) -> Result<Vec<u8>> {
     let mut buf = Vec::with_capacity(message.encoded_len());
-    message.encode(&mut buf).expect("Failed to encode message");
-    buf
+    message.encode(&mut buf).map_err(Error::from)?;
+    Ok(buf)
 }
 
 /// Helper function to decode a message from a byte slice

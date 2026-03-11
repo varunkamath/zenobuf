@@ -14,12 +14,12 @@
 //!
 //! ```toml
 //! [dependencies]
-//! zenobuf-core = "0.2"
-//! zenobuf-macros = "0.2"
-//! prost = "0.13"
+//! zenobuf-core = "0.3"
+//! zenobuf-macros = "0.3"
+//! prost = "0.14"
 //!
 //! [build-dependencies]
-//! prost-build = "0.13"
+//! prost-build = "0.14"
 //! ```
 //!
 //! ### 2. Setup automatic derive in `build.rs`
@@ -155,6 +155,13 @@ use syn::{parse_macro_input, DeriveInput};
 /// }
 /// ```
 ///
+/// # Topic Naming
+///
+/// When using derived message types with Zenobuf publishers or subscribers, topic names
+/// should follow valid Zenoh key-expression conventions. Avoid using Zenoh wildcard
+/// characters (`*`, `**`, `$`, `?`) in topic names unless you intend wildcard matching.
+/// Stick to alphanumeric characters, `/`, `-`, and `_` for topic and service names.
+///
 /// # Generated Implementation
 ///
 /// The macro generates an implementation like this:
@@ -162,20 +169,29 @@ use syn::{parse_macro_input, DeriveInput};
 /// ```rust,ignore
 /// impl zenobuf_core::Message for Point {
 ///     fn type_name() -> &'static str {
-///         "Point"
+///         // Returns fully qualified name, e.g. "my_app::proto::Point"
+///         concat!(module_path!(), "::", stringify!(Point))
 ///     }
 /// }
 /// ```
 #[proc_macro_derive(ZenobufMessage)]
 pub fn derive_zenobuf_message(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
+
+    if !matches!(input.data, syn::Data::Struct(_)) {
+        return TokenStream::from(
+            syn::Error::new_spanned(&input, "ZenobufMessage can only be derived for structs")
+                .to_compile_error(),
+        );
+    }
+
     let name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let expanded = quote! {
         impl #impl_generics ::zenobuf_core::Message for #name #ty_generics #where_clause {
             fn type_name() -> &'static str {
-                stringify!(#name)
+                concat!(module_path!(), "::", stringify!(#name))
             }
         }
     };

@@ -56,7 +56,11 @@ impl ProstMessage for TestMessage {
 #[test]
 fn test_derive_macro() {
     // Check that the Message trait is implemented
-    assert_eq!(TestMessage::type_name(), "TestMessage");
+    assert!(
+        TestMessage::type_name().ends_with("::TestMessage"),
+        "type_name should end with ::TestMessage, got: {}",
+        TestMessage::type_name()
+    );
 
     // Create a message
     let message = TestMessage { value: 42 };

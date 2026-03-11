@@ -18,7 +18,7 @@ use crate::transport::ZenohTransport;
 
 /// A guard that automatically cleans up resources when dropped
 pub struct DropGuard {
-    cleanup: Box<dyn FnOnce() + Send + Sync>,
+    cleanup: Option<Box<dyn FnOnce() + Send + Sync>>,
 }
 
 impl DropGuard {
@@ -27,16 +27,16 @@ impl DropGuard {
         F: FnOnce() + Send + Sync + 'static,
     {
         Self {
-            cleanup: Box::new(cleanup),
+            cleanup: Some(Box::new(cleanup)),
         }
     }
 }
 
 impl Drop for DropGuard {
     fn drop(&mut self) {
-        // Take the cleanup function and call it
-        let cleanup = std::mem::replace(&mut self.cleanup, Box::new(|| {}));
-        cleanup();
+        if let Some(cleanup) = self.cleanup.take() {
+            cleanup();
+        }
     }
 }
 
@@ -53,7 +53,10 @@ impl<M: Message> PublisherHandle<M> {
         publishers_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     ) -> Self {
         let cleanup = DropGuard::new(move || {
-            publishers_map.lock().unwrap().remove(&topic);
+            publishers_map
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .remove(&topic);
             tracing::debug!("Publisher dropped for topic: {}", topic);
         });
 
@@ -92,7 +95,10 @@ impl SubscriberHandle {
         subscribers_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     ) -> Self {
         let cleanup = DropGuard::new(move || {
-            subscribers_map.lock().unwrap().remove(&topic);
+            subscribers_map
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .remove(&topic);
             tracing::debug!("Subscriber dropped for topic: {}", topic);
         });
 
@@ -121,7 +127,10 @@ impl ServiceHandle {
         services_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     ) -> Self {
         let cleanup = DropGuard::new(move || {
-            services_map.lock().unwrap().remove(&service_name);
+            services_map
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .remove(&service_name);
             tracing::debug!("Service dropped: {}", service_name);
         });
 
@@ -150,7 +159,10 @@ impl<Req: Message, Res: Message> ClientHandle<Req, Res> {
         clients_map: Arc<Mutex<HashMap<String, Box<dyn std::any::Any + Send + Sync>>>>,
     ) -> Self {
         let cleanup = DropGuard::new(move || {
-            clients_map.lock().unwrap().remove(&service_name);
+            clients_map
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .remove(&service_name);
             tracing::debug!("Client dropped for service: {}", service_name);
         });
 
@@ -200,6 +212,8 @@ pub struct Node {
     /// Discovery queryable (keeps node discoverable while alive)
     _discovery_queryable:
         Option<zenoh::query::Queryable<zenoh::handlers::FifoChannelHandler<zenoh::query::Query>>>,
+    /// Discovery task handle (detached on drop; terminates when queryable is dropped)
+    _discovery_task: Option<tokio::task::JoinHandle<()>>,
 }
 
 impl Node {
@@ -214,8 +228,8 @@ impl Node {
 
     /// Creates a new Node with the given name and transport
     pub async fn with_transport(name: &str, transport: ZenohTransport) -> Result<Self> {
-        // Create discovery queryable so this node is discoverable
-        let discovery_queryable = Self::create_discovery_queryable(&transport, name).await?;
+        let (discovery_queryable, discovery_task) =
+            Self::create_discovery_queryable(&transport, name).await?;
 
         Ok(Self {
             name: name.to_string(),
@@ -227,6 +241,7 @@ impl Node {
             clients: Arc::new(Mutex::new(HashMap::new())),
             parameters: Mutex::new(HashMap::new()),
             _discovery_queryable: Some(discovery_queryable),
+            _discovery_task: Some(discovery_task),
         })
     }
 
@@ -234,8 +249,10 @@ impl Node {
     async fn create_discovery_queryable(
         transport: &ZenohTransport,
         name: &str,
-    ) -> Result<zenoh::query::Queryable<zenoh::handlers::FifoChannelHandler<zenoh::query::Query>>>
-    {
+    ) -> Result<(
+        zenoh::query::Queryable<zenoh::handlers::FifoChannelHandler<zenoh::query::Query>>,
+        tokio::task::JoinHandle<()>,
+    )> {
         let key = format!("{}{}", Self::NODE_PREFIX, name);
         let key_expr = zenoh::key_expr::KeyExpr::try_from(key.clone())
             .map_err(|e| Error::node(name, format!("Failed to create discovery key: {}", e)))?;
@@ -257,8 +274,7 @@ impl Node {
         let info_str = node_info.to_string();
         let key_clone = key.clone();
 
-        // Spawn task to respond to discovery queries
-        tokio::spawn(async move {
+        let task = tokio::spawn(async move {
             while let Ok(query) = queryable_clone.recv_async().await {
                 let _ = query.reply(&key_clone, info_str.clone()).await;
             }
@@ -266,7 +282,7 @@ impl Node {
 
         tracing::debug!("Node '{}' registered for discovery at {}", name, key);
 
-        Ok(queryable)
+        Ok((queryable, task))
     }
 
     /// Returns a reference to the callback executor
@@ -288,18 +304,13 @@ impl Node {
         topic: &str,
         qos: QosProfile,
     ) -> Result<Arc<Publisher<M>>> {
-        // Use the topic name as provided by the user (global topics by default)
         let topic_name = topic.to_string();
 
-        // Check if the publisher already exists
-        {
-            let publishers = self.publishers.lock().unwrap();
-            if publishers.contains_key(&topic_name) {
-                return Err(Error::topic_already_exists(&topic_name, &self.name));
-            }
-        } // MutexGuard is dropped here
+        // Fast-path rejection before expensive transport call
+        if self.publishers.lock().unwrap().contains_key(&topic_name) {
+            return Err(Error::topic_already_exists(&topic_name, &self.name));
+        }
 
-        // Create the publisher with QoS settings
         let inner_publisher = self
             .transport
             .create_publisher::<M>(&topic_name, &qos)
@@ -309,8 +320,11 @@ impl Node {
             Box::new(inner_publisher),
         ));
 
-        // Store the publisher
+        // Re-check under lock to handle concurrent creation
         let mut publishers = self.publishers.lock().unwrap();
+        if publishers.contains_key(&topic_name) {
+            return Err(Error::topic_already_exists(&topic_name, &self.name));
+        }
         publishers.insert(topic_name, Box::new(publisher.clone()));
 
         Ok(publisher)
@@ -320,25 +334,18 @@ impl Node {
     pub async fn create_subscriber<M: Message, F>(
         &self,
         topic: &str,
-        #[allow(unused_variables)] qos: QosProfile,
+        _qos: QosProfile,
         callback: F,
     ) -> Result<Arc<Subscriber>>
     where
         F: Fn(M) + Send + Sync + 'static,
     {
-        // Note: Subscriber QoS is not currently mapped to Zenoh (planned for future release)
-        // Use the topic name as provided by the user (global topics by default)
         let topic_name = topic.to_string();
 
-        // Check if the subscriber already exists
-        {
-            let subscribers = self.subscribers.lock().unwrap();
-            if subscribers.contains_key(&topic_name) {
-                return Err(Error::topic_already_exists(&topic_name, &self.name));
-            }
-        } // MutexGuard is dropped here
+        if self.subscribers.lock().unwrap().contains_key(&topic_name) {
+            return Err(Error::topic_already_exists(&topic_name, &self.name));
+        }
 
-        // Create the subscriber with executor for callback queueing
         let inner_subscriber = self
             .transport
             .create_subscriber::<M, F>(&topic_name, callback, Some(self.executor.clone()))
@@ -348,8 +355,10 @@ impl Node {
             Box::new(inner_subscriber),
         ));
 
-        // Store the subscriber
         let mut subscribers = self.subscribers.lock().unwrap();
+        if subscribers.contains_key(&topic_name) {
+            return Err(Error::topic_already_exists(&topic_name, &self.name));
+        }
         subscribers.insert(topic_name, Box::new(subscriber.clone()));
 
         Ok(subscriber)
@@ -364,21 +373,15 @@ impl Node {
     where
         F: Fn(Req) -> Result<Res> + Send + Sync + 'static,
     {
-        // Use the service name as provided by the user (global services by default)
         let full_service_name = service_name.to_string();
 
-        // Check if the service already exists
-        {
-            let services = self.services.lock().unwrap();
-            if services.contains_key(&full_service_name) {
-                return Err(Error::service_already_exists(
-                    &full_service_name,
-                    &self.name,
-                ));
-            }
-        } // MutexGuard is dropped here
+        if self.services.lock().unwrap().contains_key(&full_service_name) {
+            return Err(Error::service_already_exists(
+                &full_service_name,
+                &self.name,
+            ));
+        }
 
-        // Create the service
         let inner_service = self
             .transport
             .create_service::<Req, Res, F>(&full_service_name, handler)
@@ -388,8 +391,13 @@ impl Node {
             Box::new(inner_service),
         ));
 
-        // Store the service
         let mut services = self.services.lock().unwrap();
+        if services.contains_key(&full_service_name) {
+            return Err(Error::service_already_exists(
+                &full_service_name,
+                &self.name,
+            ));
+        }
         services.insert(full_service_name, Box::new(service.clone()));
 
         Ok(service)
@@ -446,11 +454,10 @@ impl Node {
         name: &str,
     ) -> Result<T> {
         let parameters = self.parameters.lock().unwrap();
-        if let Some(param) = parameters.get(name) {
-            param.get_value()
-        } else {
-            Err(Error::parameter(name, "Parameter not found"))
-        }
+        parameters
+            .get(name)
+            .ok_or_else(|| Error::parameter(name, "Parameter not found"))?
+            .get_value()
     }
 
     /// Spins the node once, processing all pending callbacks
@@ -465,8 +472,14 @@ impl Node {
     /// This method will block until `shutdown()` is called on the node.
     pub async fn spin(&self) -> Result<()> {
         while !self.executor.is_shutdown() {
-            self.spin_once()?;
-            tokio::time::sleep(Duration::from_millis(10)).await;
+            // Register interest in notifications BEFORE draining the queue
+            // to avoid a race where enqueue's notify_one fires between
+            // process_pending and the await.
+            let notified = self.executor.notified();
+            let processed = self.spin_once()?;
+            if processed == 0 {
+                let _ = tokio::time::timeout(Duration::from_secs(1), notified).await;
+            }
         }
         Ok(())
     }
