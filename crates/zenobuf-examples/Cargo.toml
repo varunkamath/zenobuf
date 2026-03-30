@@ -1,6 +1,6 @@
 [package]
 name = "zenobuf-examples"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2021"
 authors = ["Zenobuf Team"]
 description = "Example applications for the Zenobuf framework - publishers, subscribers, services, and clients"
@@ -11,8 +11,8 @@ documentation = "https://docs.rs/zenobuf-examples"
 readme = "../../README.md"
 
 [dependencies]
-zenobuf-core = { path = "../zenobuf-core", version = "0.3.4" }
-zenobuf-macros = { path = "../zenobuf-macros", version = "0.3.4" }
+zenobuf-core = { path = "../zenobuf-core", version = "0.3.5" }
+zenobuf-macros = { path = "../zenobuf-macros", version = "0.3.5" }
 prost = "0.14.3"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
