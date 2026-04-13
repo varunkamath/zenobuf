@@ -21,7 +21,7 @@ thiserror = "2"
 tracing = "0.1"
 bytes = "1"
 futures = "0.3"
-rand = "0.10.0"
+rand = "0.10.1"
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["async_tokio"] }
