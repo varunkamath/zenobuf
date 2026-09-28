@@ -25,7 +25,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 
 Each commit message consists of a **header**, a **body**, and a **footer**:
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -35,7 +35,7 @@ Each commit message consists of a **header**, a **body**, and a **footer**:
 
 The **header** is mandatory and must conform to the following format:
 
-```
+```text
 <type>(<scope>): <subject>
 ```
 
@@ -79,7 +79,7 @@ Breaking Changes should start with the word `BREAKING CHANGE:` with a space or t
 
 ### Examples
 
-```
+```text
 feat(core): add support for custom serialization
 
 Adds a new trait for custom serialization of messages.
@@ -87,7 +87,7 @@ Adds a new trait for custom serialization of messages.
 Closes #123
 ```
 
-```
+```text
 fix(transport): resolve deadlock in service calls
 
 This fixes a deadlock that could occur when multiple service calls were made simultaneously.
@@ -95,13 +95,13 @@ This fixes a deadlock that could occur when multiple service calls were made sim
 Closes #456
 ```
 
-```
+```text
 refactor(macros): simplify code generation
 
 Simplifies the code generation logic to make it more maintainable.
 ```
 
-```
+```text
 docs(examples): add more comprehensive examples
 
 Adds more examples to demonstrate how to use the framework in different scenarios.

@@ -85,7 +85,7 @@ This document summarizes the comprehensive documentation improvements made to th
 
 ## 📚 New Documentation Structure
 
-```
+```text
 docs/
 ├── README.md              # Project overview and navigation
 ├── getting-started.md     # Complete tutorial (5,000+ words)

@@ -30,7 +30,7 @@ While Zenoh is the default transport, the architecture allows for pluggable tran
 
 ## System Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
 ├─────────────────────────────────────────────────────────────┤
@@ -111,7 +111,7 @@ Messages are serialized using Protocol Buffers for efficient, cross-language com
 
 ### Publish-Subscribe
 
-```
+```text
 Publisher Node                    Subscriber Node
 ┌─────────────┐                  ┌─────────────┐
 │ Publisher   │ ──── Topic ────► │ Subscriber  │
@@ -126,7 +126,7 @@ Publisher Node                    Subscriber Node
 
 ### Request-Response (Services)
 
-```
+```text
 Client Node                      Service Node
 ┌─────────────┐                  ┌─────────────┐
 │ Client      │ ──── Request ──► │ Service     │
@@ -141,7 +141,7 @@ Client Node                      Service Node
 
 ### Parameters
 
-```
+```text
 Node A                           Node B
 ┌─────────────┐                  ┌─────────────┐
 │ set_param() │ ──── Zenoh ────► │ get_param() │
@@ -174,7 +174,7 @@ QoS profiles are implemented at the transport layer and affect:
 
 Zenobuf uses an async-first design built on Tokio:
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Tokio Runtime                            │
 ├─────────────────────────────────────────────────────────────┤
@@ -347,7 +347,7 @@ Each node can run in its own container with service discovery through the contai
 ## Comparison with ROS
 
 | Feature | ROS | Zenobuf |
-|---------|-----|---------|
+| ------- | --- | ------- |
 | Language | C++/Python | Rust |
 | Type Safety | Runtime | Compile-time |
 | Memory Safety | Manual | Automatic |

@@ -75,7 +75,7 @@ Complete working examples:
 
 ## 🏗️ Project Structure
 
-```
+```text
 zenobuf/
 ├── Cargo.toml              # Workspace configuration
 ├── README.md               # Project overview

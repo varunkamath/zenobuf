@@ -216,7 +216,7 @@ cargo run
 
 You should see output like:
 
-```
+```text
 📡 Publisher started! Publishing sensor data and points...
 📤 Published sensor reading: temp_sensor_01 = 20.00°C
 📤 Published point: (0.00, 1.00, 0.00)
